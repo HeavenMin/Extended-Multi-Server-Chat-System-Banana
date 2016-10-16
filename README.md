@@ -24,6 +24,7 @@
 4 the system can add new servers to the system. (add by admin using command "java - jar myServer.jar <any arguments>" ) 
 
 5 set the Cloud Nectar (if port 4444 cannot use, can try port 80)
+
 }
 
 // need to do: {
@@ -31,6 +32,7 @@
 1 authentication using OAuth2 with Facebook,Google or Twitter accounts. (5 extra marks)
 
 2 GUI (10 extra marks)
+
 }
 
 
@@ -47,4 +49,5 @@
 5.系统管理员可以增加新的server（这个我觉得是通过和main server的连接来接受所有新server的信息同时开启一个连接）（加入新的JSON协议来控制创建server的信息发送到旧的服务器上）
 
 6.＊（＋10）GUI 
+
 }
