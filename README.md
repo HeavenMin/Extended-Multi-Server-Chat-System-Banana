@@ -1,6 +1,7 @@
 # Extended-Multi-Server-Chat-System   Banana
-------------------------------------------------------
-//Demo time : 11:00am 20-Oct
+
+
+//demo time : 11:00am 20-Oct
 //due time  : 11:59pm 19-Oct
 
 /need to extend : Security | Failure | Scalability
