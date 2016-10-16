@@ -1,12 +1,13 @@
 # Extended-Multi-Server-Chat-System   Banana
 
-
+{
 //demo time : 11:00am 20-Oct
 //due time  : 11:59pm 19-Oct
+}
 
 /need to extend : Security | Failure | Scalability
 
-//must to do: !!important!!
+//must to do: !!important!! {
 
 1 encrypted communicaiton (TSL/SSL TCP connections)
 
@@ -20,15 +21,15 @@
 4 the system can add new servers to the system. (add by admin using command "java - jar myServer.jar <any arguments>" ) 
 
 5 set the Cloud Nectar (if port 4444 cannot use, can try port 80)
-
-// need to do:
+}
+// need to do: {
 
 1 authentication using OAuth2 with Facebook,Google or Twitter accounts. (5 extra marks)
 
 2 GUI (10 extra marks)
+}
 
-
-————Lang Lin's idea
+//Lang Lin's idea {
 
 1.信息交互之间进行加密（TSL／SSL TCP connection），这个可以用java内部自带的方法来实现
 
@@ -40,4 +41,5 @@
 
 5.系统管理员可以增加新的server（这个我觉得是通过和main server的连接来接受所有新server的信息同时开启一个连接）（加入新的JSON协议来控制创建server的信息发送到旧的服务器上）
 
-6.＊（＋10）GUI
+6.＊（＋10）GUI 
+}
