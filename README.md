@@ -2,8 +2,8 @@
 ------------------------------------------------------
 //Demo time : 11:00am 20-Oct
 //due time  : 11:59pm 19-Oct
-------------------------------------------------------
-//need to extend : Security | Failure | Scalability
+
+/need to extend : Security | Failure | Scalability
 
 //must to do: !!important!!
 
