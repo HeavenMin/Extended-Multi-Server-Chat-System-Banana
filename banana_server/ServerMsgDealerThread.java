@@ -2,10 +2,10 @@ package myServer2;
 
 /*
  * Name : Min Gao
- * COMP90015 Distributed Systems 2016 SM2 
- * Project1-Multi-Server Chat System  
- * Login Name : ming1 
- * Student Number : 773090 
+ * COMP90015 Distributed Systems 2016 SM2
+ * Project1-Multi-Server Chat System
+ * Login Name : ming1
+ * Student Number : 773090
  */
 
 import java.io.BufferedReader;
@@ -24,7 +24,7 @@ public class ServerMsgDealerThread extends Thread {
 	private BufferedWriter writer;
 	private JSONParser parser = new JSONParser();
 	volatile private boolean isRunning = true;
-	
+
 	public ServerMsgDealerThread(Socket serverSocket) {
 		try {
 			this.serverSocket = serverSocket;
@@ -38,17 +38,17 @@ public class ServerMsgDealerThread extends Thread {
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Override
 	public void run() {
-		
+
 		try {
 			while(isRunning) {
 				String msg = reader.readLine();
 				System.out.println("Receive a msg from another server" + msg);
 				JSONObject msgJsonObj = (JSONObject) parser.parse(msg);
 				String msgType = (String) msgJsonObj.get("type");
-				
+
 				if (msgType.equals("lockidentity")) {
 					String clientid = (String) msgJsonObj.get("identity");
 					boolean vote = !ClientState.getInstance().isClientidExist(clientid);
@@ -62,14 +62,14 @@ public class ServerMsgDealerThread extends Thread {
 					writer.newLine();
 					writer.flush();
 				}
-				
+
 				if (msgType.equals("releaseidentity")) {
 					System.out.println("relealse a identity!");//for test
 					String clientid = (String) msgJsonObj.get("identity");
 					ClientState.getInstance().releaseLockClient(clientid);
 					isRunning = false;
 				}
-				
+
 				if (msgType.equals("lockroomid")) {
 					String room = (String) msgJsonObj.get("roomid");
 					boolean vote = !RoomManager.getInstance().isRoomExist(room);
@@ -83,7 +83,7 @@ public class ServerMsgDealerThread extends Thread {
 					writer.newLine();
 					writer.flush();
 				}
-				
+
 				if (msgType.equals("releaseroomid")) {
 					System.out.println("get a release roomid!");
 					String room = (String) msgJsonObj.get("roomid");
@@ -93,16 +93,16 @@ public class ServerMsgDealerThread extends Thread {
 						RoomManager.getInstance().addOtherServerRoom(room, serverid);
 					}
 				}
-				
+
 				if (msgType.equals("deleteroom")) {
 					System.out.println("A remote room was deleted!");
 					String remoteRoom = (String) msgJsonObj.get("roomid");
 					RoomManager.getInstance().removeOtherServerRoom(remoteRoom);
-					
+
 				}
 				isRunning = false;
 			}
-			
+
 		}
 		catch (IOException e) {
 			e.printStackTrace();
@@ -110,7 +110,7 @@ public class ServerMsgDealerThread extends Thread {
 		catch (ParseException e) {
 			e.printStackTrace();
 		}
-		
+
 	}
 
 }

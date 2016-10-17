@@ -14,7 +14,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 public class MainServerClientConnection extends Thread{
-	
+
 	private JSONParser parser = new JSONParser();
 
 	@Override
@@ -23,10 +23,12 @@ public class MainServerClientConnection extends Thread{
 		System.setProperty("javax.net.ssl.trustStore", "tclient.keystore");
 		System.setProperty("javax.net.ssl.keyStorePassword","123456");
 		System.setProperty("javax.net.debug","all");
-		
+
 		try{
+			//开启接收client的sslserversocket
 			SSLServerSocketFactory sslserversocketfactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
 			SSLServerSocket listeningClientSocket = (SSLServerSocket) sslserversocketfactory.createServerSocket(MainServer.getInstance().GetPort());
+			//把已经定型好的username和password弄到这个程序里
 			ArrayList<String> all_user = MainServer.getInstance().GetUserName();
 			ArrayList<String> all_password = MainServer.getInstance().GetPassword();
 			while(true){
@@ -38,20 +40,20 @@ public class MainServerClientConnection extends Thread{
 				String user_name = (String) msgJsonObj.get("username");
 				String password = (String) msgJsonObj.get("password");
 				boolean exist = false;
-				
+				//如果用户存在，用户名密码对应正确，用户名并没有被锁住那么返回true让用户顺利登陆
 				int index = all_user.indexOf(user_name);
 				if(index != -1 && all_password.get(index).equals(password) && MainServer.getInstance().CheckIDLockedOrLockIt(index)){
 					exist = true;
 				}
-				
-				JSONObject reply = ServerMessage.userLogin(exist);
+				//返回成功与否给用户
+				JSONObject reply = ServerMessage.userLogin(exist,MainServer.getInstance().GetServerState());
 				writer.write(reply.toJSONString());
 				writer.newLine();
 				writer.flush();
 			}
 		}
 		catch(Exception e){
-			
+
 		}
 	}
 }

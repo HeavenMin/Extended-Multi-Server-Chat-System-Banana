@@ -1,7 +1,6 @@
 package myServer2;
 
 import java.util.ArrayList;
-import java.io.File;
 
 import javax.net.ssl.SSLSocket;
 
@@ -33,6 +32,7 @@ public class MainServer {
 		port = 80;
 		coordination = 4444;
 
+		//开始运行分别接收client和server连接的thread
 		new MainServerServerConnection().start();
 		new MainServerClientConnection().start();
 	}
@@ -66,9 +66,17 @@ public class MainServer {
 		server_connection.add(new_connection);
 	}
 
+	public ArrayList<SSLSocket> GetServerConnection(){
+		return server_connection;
+	}
+
 
 	public void AddServerState(Conf new_Conf){
 		server_state.add(new_Conf);
+	}
+
+	public ArrayList<Conf> GetServerState(){
+		return server_state;
 	}
 
 	public synchronized boolean CheckIDLockedOrLockIt(int index){

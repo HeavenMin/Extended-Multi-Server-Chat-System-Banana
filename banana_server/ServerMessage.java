@@ -8,6 +8,7 @@ package myServer2;
  * Student Number : 773090
  */
 
+import java.net.InetAddress;
 import java.util.ArrayList;
 
 import org.json.simple.JSONArray;
@@ -179,5 +180,100 @@ public class ServerMessage {
 	    quit.put("type", "quit");
 	    return quit;
 	  }
+
+	//这个方法是main server用来回复user他们用username,password登陆成功与否
+	public static JSONObject userLogin(boolean approved,ArrayList<Conf> serverConf){
+		JSONObject userLogin = new JSONObject();
+		userLogin.put("type", "clientAuthen");
+		if(approved){
+			userLogin.put("approved","true");
+			JSONArray serverid_array= new JSONArray();
+			JSONArray serverAddress_array= new JSONArray();
+			JSONArray clientsPort_array= new JSONArray();
+			for(int i=0;i<serverConf.size();i++){
+				serverid_array.add(serverConf.get(i).getServerid());
+				serverAddress_array.add(serverConf.get(i).getServerAddress().getHostAddress());
+				clientsPort_array.add(Integer.toString(serverConf.get(i).getClientsPort()));
+			}
+			userLogin.put("serveridArray", serverid_array);
+			userLogin.put("serverAddressArray", serverAddress_array);
+			userLogin.put("clientsPortArray", clientsPort_array);
+		}
+		else{
+			userLogin.put("approved","false");
+		}
+		return userLogin;
+	}
+
+	//这个方法是用来使新的server连接main server的，他将自己的信息传送给main server
+	public static JSONObject addServerRequest(Conf serverConf){
+		String serverid = serverConf.getServerid();
+		InetAddress serverAddress = serverConf.getServerAddress();
+		int clientsPort = serverConf.getClientsPort();
+		int coordinationPort = serverConf.getCoordinationPort();
+		JSONObject request = new JSONObject();
+		request.put("type", "addserver");
+		request.put("serverid",serverid);
+		request.put("serverAddress", serverAddress.getHostAddress());
+		request.put("clientsPort", Integer.toString(clientsPort));
+		request.put("coordinationPort", Integer.toString(coordinationPort));
+
+		return request;
+	}
+
+
+	//这个方法是让main server来给新server有关老server信息的
+	public static JSONObject newServerReply(ArrayList<Conf> serverConfs){
+		String[] serverid = new String[serverConfs.size()];
+		InetAddress[] serverAddress = new InetAddress[serverConfs.size()];
+		int[] clientsPort = new int[serverConfs.size()];
+		int[] coordinationPort = new int[serverConfs.size()];
+		for(int i=0;i<serverConfs.size();i++){
+			serverid[i] = serverConfs.get(i).getServerid();
+			serverAddress[i] = serverConfs.get(i).getServerAddress();
+			clientsPort[i] = serverConfs.get(i).getClientsPort();
+			coordinationPort[i] = serverConfs.get(i).getCoordinationPort();
+		}
+		JSONObject reply = new JSONObject();
+		reply.put("type", "serverreply");
+		JSONArray serverid_array = new JSONArray();
+		JSONArray serverAddress_array = new JSONArray();
+		JSONArray clientsPort_array = new JSONArray();
+		JSONArray coordinationPort_array = new JSONArray();
+		for(int i=0; i<serverid.length; i++){
+			serverid_array.add(serverid[i]);
+			serverAddress_array.add(serverAddress[i]);
+			clientsPort_array.add(clientsPort[i]);
+			coordinationPort_array.add(coordinationPort[i]);
+		}
+		reply.put("serveridArray", serverid_array);
+		reply.put("serverAddressArray", serverAddress_array);
+		reply.put("clientsPortArray", clientsPort_array);
+		reply.put("coordinationPortArray", coordinationPort_array);
+
+		return reply;
+	}
+
+
+	//这个方法是让main server来给所有老server一个信息：有一个新server加入，然后老server就会把新server加入到他们的remote conf里面
+	public static JSONObject noticeNewServerComing(Conf serverConf){
+		String serverid = serverConf.getServerid();
+		InetAddress serverAddress = serverConf.getServerAddress();
+		int clientsPort = serverConf.getClientsPort();
+		int coordinationPort = serverConf.getCoordinationPort();
+		JSONObject newServer = new JSONObject();
+		newServer.put("type", "newserver");
+		newServer.put("serverid",serverid);
+		newServer.put("serverAddress", serverAddress.getHostAddress());
+		newServer.put("clientsPort", Integer.toString(clientsPort));
+		newServer.put("coordinationPort", Integer.toString(coordinationPort));
+		return newServer;
+	}
+
+
+	//这个方法是让main server告诉所有server,有一个server心跳连接失败了，所有server该删掉所有有关该server的房间信息了
+	public static JSONObject notifyOneServerDown(){
+		return null;
+	}
 
 }
