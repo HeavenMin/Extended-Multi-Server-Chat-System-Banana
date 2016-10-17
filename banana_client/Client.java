@@ -1,17 +1,39 @@
-package au.edu.unimelb.tcp.client;
+package MyClient;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
-import java.net.Socket;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.UnknownHostException;
-
+import java.util.Scanner;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 
 public class Client {
 
+	private static Scanner keyboard;
+
 	public static void main(String[] args) throws IOException, ParseException {
-		Socket socket = null;
+		keyboard = new Scanner(System.in);
+		String userName;
+		String password;
+		String isApproved = null;
+		SSLSocket mainServerSocket = null;
+//		DataOutputStream mainServerOut = null;
+		BufferedWriter writer = null;
+		BufferedReader reader = null;
+		System.setProperty("javax.net.ssl.keyStore","kserver.keystore");
+		System.setProperty("javax.net.ssl.trustStore", "tclient.keystore");
+		System.setProperty("javax.net.ssl.keyStorePassword","123456");
+		System.setProperty("javax.net.debug","all");
+		SSLSocket socket = null;
 		String identity = null;
 		boolean debug = false;
 		try {
@@ -24,22 +46,76 @@ public class Client {
 				identity = values.getIdeneity();
 				int port = values.getPort();
 				debug = values.isDebug();
-				socket = new Socket(hostname, port);
+				SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+				mainServerSocket = (SSLSocket) sslsocketfactory.createSocket("172.16.42.4", 80);
+//				mainServerOut = new DataOutputStream(mainServerSocket.getOutputStream());
+				reader = new BufferedReader(
+						new InputStreamReader(mainServerSocket.getInputStream(), "UTF-8"));
+				writer = new BufferedWriter(
+						new OutputStreamWriter(mainServerSocket.getOutputStream(), "UTF-8"));
 			} catch (CmdLineException e) {
 				e.printStackTrace();
 			}
-			
+
 			State state = new State(identity, "");
-			
-			// start sending thread
-			MessageSendThread messageSendThread = new MessageSendThread(socket, state, debug);
-			Thread sendThread = new Thread(messageSendThread);
-			sendThread.start();
-			
-			// start receiving thread
-			Thread receiveThread = new Thread(new MessageReceiveThread(socket, state, messageSendThread, debug));
-			receiveThread.start();
-			
+
+			System.out.println("Please enter your username: ");
+			userName = keyboard.nextLine();
+			System.out.println("Please enter your password: ");
+			password = keyboard.nextLine();
+
+			writer.write(ClientMessages.sendUsernameAndPassword(userName, password).toJSONString());
+			writer.newLine();
+			writer.flush();
+
+			String feedback = reader.readLine();
+
+			JSONParser jsonparser = new JSONParser();
+			JSONObject feedbackJsonObj = (JSONObject) jsonparser.parse(feedback);
+			String feedbackType = (String) feedbackJsonObj.get("type");
+			if (feedbackType.equals("clientAuthen")) {
+				isApproved = (String) feedbackJsonObj.get("approved");
+
+				System.out.println("mingao" + isApproved);
+				System.out.println(feedback);	//for test
+
+				if (isApproved.equals("true")) {
+					JSONArray serverIdArray = (JSONArray) feedbackJsonObj.get("serveridArray");
+					JSONArray serverAddressArray = (JSONArray) feedbackJsonObj.get("serverAddressArray");
+					JSONArray clientsPortArray = (JSONArray) feedbackJsonObj.get("clientsPortArray");
+					for (int i = 0; i < serverIdArray.size(); i++) {
+						System.out.println(i + ":"+ serverIdArray.get(i).toString());
+					}
+					System.out.println("Please choose a sever you want to connect!(enter a number):");
+					int serverNumber = keyboard.nextInt();
+
+					String newServerAddress = (String) serverAddressArray.get(serverNumber);
+					int newClientPort = Integer.parseInt((String) clientsPortArray.get(serverNumber));
+					SSLSocketFactory sslsocketfactory2 = (SSLSocketFactory) SSLSocketFactory.getDefault();
+					socket = (SSLSocket) sslsocketfactory2.createSocket(newServerAddress, newClientPort);
+					mainServerSocket.close();
+				}
+				else {
+					System.exit(1);
+				}
+			}
+			else {
+				System.exit(1);
+			}
+
+
+			if (isApproved.equals("true")) {
+				// start sending thread
+				MessageSendThread messageSendThread = new MessageSendThread(socket, state, debug);
+				Thread sendThread = new Thread(messageSendThread);
+				sendThread.start();
+
+				// start receiving thread
+				Thread receiveThread = new Thread(new MessageReceiveThread(socket, state, messageSendThread, debug));
+				receiveThread.start();
+			}
+
+
 		} catch (UnknownHostException e) {
 			System.out.println("Unknown host");
 		} catch (IOException e) {
