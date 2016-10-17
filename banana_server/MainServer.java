@@ -26,11 +26,14 @@ public class MainServer {
 		AuthenLoader loader = new AuthenLoader();
 		username = loader.loadUserNameList("authen.txt");
 		password = loader.loadPasswordList("authen.txt");
+		locked = new ArrayList<Boolean>();
+		server_connection = new ArrayList<SSLSocket>();
+		server_state = new ArrayList<Conf>();
 		for(int i=0;i<username.size();i++){
-			locked.add(false);
+			locked.add(true);
 		}
 		port = 80;
-		coordination = 4444;
+		coordination = 90;
 
 		//开始运行分别接收client和server连接的thread
 		new MainServerServerConnection().start();
