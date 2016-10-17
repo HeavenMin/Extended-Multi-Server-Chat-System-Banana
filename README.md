@@ -12,16 +12,17 @@
 
 //must to do: !!important!! {
 
-1 encrypted communicaiton (TSL/SSL TCP connections)
+FINISHED 1 encrypted communicaiton (TSL/SSL TCP connections) 
 
-2 authentication mechanism (username and password), need a central authentication server.
+FINISHED 2 authentication mechanism (username and password), need a central authentication server.
     need to add the authentication feature to the given chat client to support above authentication mechanism.
     [p.s. the username is not necessarily the same as client identity]
+    P.S 解锁的问题需要考虑一下
     
-3 when a chat server crashes or stops responding, should detect this situation. delete all chatrooms of that server. client cannot redirected to that server anymore.
+3 when a chat server crashes or stops responding, should detect this situation. delete all chatrooms of that server. client cannot redirected to that server anymore.  ！！！！！！！！！！！！
    can use heartbeat signals
 
-4 the system can add new servers to the system. (add by admin using command "java - jar myServer.jar <any arguments>" ) 
+4 the system can add new servers to the system. (add by admin using command "java - jar myServer.jar <any arguments>" ) ！！！！！
 
 5 set the Cloud Nectar (if port 4444 cannot use, can try port 80)
 
