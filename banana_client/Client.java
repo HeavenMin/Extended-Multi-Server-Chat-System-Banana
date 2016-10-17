@@ -18,6 +18,7 @@ import org.json.simple.parser.ParseException;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 
+//haha
 public class Client {
 
 	private static Scanner keyboard;
