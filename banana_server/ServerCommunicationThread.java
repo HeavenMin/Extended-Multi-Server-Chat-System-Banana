@@ -45,14 +45,7 @@ public class ServerCommunicationThread extends Thread {
 		System.setProperty("javax.net.debug","all");
 
 		try{
-			//这里是用来进行心跳检测的代码部分
-			ArrayList<Conf> remoteServer = ServerState.getInstance().getServerList();
-			for (Conf serverConf : remoteServer) {
-				SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-				SSLSocket sslsocket = (SSLSocket) sslsocketfactory.createSocket(serverConf.getServerAddress(), serverConf.getCoordinationPort());
-				new HeartBeatTest(sslsocket,serverConf).start();
-			}
-			//以下是大哥原来的代码，上面是我新加的
+
 			while(isRunning) {
 				SSLSocket serverSocket = (SSLSocket) listeningServerSocket.accept();
 				new ServerMsgDealerThread(serverSocket).start();
