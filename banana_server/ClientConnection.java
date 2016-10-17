@@ -1,12 +1,14 @@
 package myServer2;
 
+
 /*
  * Name : Min Gao
- * COMP90015 Distributed Systems 2016 SM2 
- * Project1-Multi-Server Chat System  
- * Login Name : ming1 
- * Student Number : 773090 
+ * COMP90015 Distributed Systems 2016 SM2
+ * Project1-Multi-Server Chat System
+ * Login Name : ming1
+ * Student Number : 773090
  */
+//这份更改了所有socket为sslsocket,然后因为格式原因，每个定义socket上面都加入了一行SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -14,19 +16,27 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.InetAddress;
-import java.net.Socket;
+//更改socket为sslsocket
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 import java.util.ArrayList;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 public class ClientConnection extends Thread {
-	
+
 	volatile private boolean isRunning = true;
 	private JSONParser parser = new JSONParser();
-	
+
 	@Override
 	public void run() {
+		//新加入为了使ssl能够使用而更改的设置,名字再议
+		System.setProperty("javax.net.ssl.keyStore","kserver.keystore");
+		System.setProperty("javax.net.ssl.trustStore", "tclient.keystore");
+		System.setProperty("javax.net.ssl.keyStorePassword","123456");
+		System.setProperty("javax.net.debug","all");
+
 		while (isRunning) {
 			try {
 				ClientMessage msg = MessageQueue.getInstance().take();
@@ -61,13 +71,13 @@ public class ClientConnection extends Thread {
 			}
 		}
 	}
-	
+
 	private void getRoomList(ClientMessage msg) {
 		String msgToClient = ServerMessage.roomListReply(RoomManager.getInstance().getAllRoom()).toJSONString();
 		System.out.println(msgToClient + "send to " + msg.getIdentity());
 		ClientState.getInstance().getClient(msg.getIdentity()).write(msgToClient);
 	}
-	
+
 	private void getRoomClient(ClientMessage msg) {
 		Client client = ClientState.getInstance().getClient(msg.getIdentity());
 		Room room = RoomManager.getInstance().getLocalRoom(client.getRoom());
@@ -76,13 +86,13 @@ public class ClientConnection extends Thread {
 		System.out.println(msgToClient + "send to " + msg.getIdentity());
 		ClientState.getInstance().getClient(msg.getIdentity()).write(msgToClient);
 	}
-	
+
 	private void createRoom(ClientMessage msg) {
 		String roomOwner = msg.getIdentity();
 		String roomid = msg.getString("roomid");
-		if (RoomManager.getInstance().isRoomExist(roomid) || 
+		if (RoomManager.getInstance().isRoomExist(roomid) ||
 				!IdentityChecker.isIdentityValid(roomid)) {
-			System.out.println(msg.getIdentity() + 
+			System.out.println(msg.getIdentity() +
 					" want to create a exist room or a room of unvalid name!Invalid!");
 			String replyToClient = ServerMessage.createRoomReplyToClient(roomid, false).toJSONString();
 			ClientState.getInstance().getClient(msg.getIdentity()).write(replyToClient);
@@ -100,7 +110,9 @@ public class ClientConnection extends Thread {
 		boolean vote = true;
 		try {
 			for (Conf serverConf : otherServerList) {
-				Socket socket = new Socket(serverConf.getServerAddress(),serverConf.getCoordinationPort());
+				//更改socket为sslsocket
+				SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+				SSLSocket socket = (SSLSocket) sslsocketfactory.createSocket(serverConf.getServerAddress(),serverConf.getCoordinationPort());
 				BufferedReader serverReader = new BufferedReader(
 						new InputStreamReader(socket.getInputStream(), "UTF-8"));
 				BufferedWriter serverWriter = new BufferedWriter(
@@ -113,9 +125,11 @@ public class ClientConnection extends Thread {
 				vote = vote && (((String) replyJsonObj.get("locked")).equals("true"));
 				socket.close();
 			}
-			
+
 			for (Conf serverConf : otherServerList) {
-				Socket serverSocket = new Socket(serverConf.getServerAddress(),serverConf.getCoordinationPort());
+				//更改socket为sslsocket
+				SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+				SSLSocket serverSocket = (SSLSocket) sslsocketfactory.createSocket(serverConf.getServerAddress(),serverConf.getCoordinationPort());
 				BufferedWriter serverWriter = new BufferedWriter(
 						new OutputStreamWriter(serverSocket.getOutputStream(),"UTF-8"));
 				request = ServerMessage.releaseRoomidLock(
@@ -126,11 +140,11 @@ public class ClientConnection extends Thread {
 				serverWriter.close();
 				serverSocket.close();
 			}
-			
+
 			ClientState.getInstance().getClient(msg.getIdentity()).write(
 					ServerMessage.createRoomReplyToClient(roomid, vote).toJSONString());
-			
-			
+
+
 			if (vote) {
 				Client client = ClientState.getInstance().getClient(roomOwner);
 				String previousRoom = client.getRoom();
@@ -145,7 +159,7 @@ public class ClientConnection extends Thread {
 				broadCastInform(msg, roomid, inform);
 				broadCastInform(msg, previousRoom, inform);
 			}
-			
+
 		}
 		catch (IOException e) {
 			e.printStackTrace();
@@ -153,9 +167,9 @@ public class ClientConnection extends Thread {
 		catch (org.json.simple.parser.ParseException e) {
 			e.printStackTrace();
 		}
-		
+
 	}
-	
+
 	private void quitRoom(ClientMessage msg) {
 		String clientid = msg.getIdentity();
 		if (ClientState.getInstance().getClient(clientid) == null) {
@@ -177,10 +191,12 @@ public class ClientConnection extends Thread {
 			JSONObject informToServer = ServerMessage.deleteRoomInform(room.getRoomServerid(), room.getRoomid());
 			ArrayList<Conf> otherServerList = ServerState.getInstance().getServerList();
 			String mainRoom = "MainHall-" + room.getRoomServerid();
-			
+
 			for (Conf serverConf : otherServerList) {
 				try {
-					Socket serverSocket = new Socket(serverConf.getServerAddress(),serverConf.getCoordinationPort());
+					//更改socket为sslsocket
+					SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+					SSLSocket serverSocket = (SSLSocket) sslsocketfactory.createSocket(serverConf.getServerAddress(),serverConf.getCoordinationPort());
 					BufferedWriter serverWriter = new BufferedWriter(
 							new OutputStreamWriter(serverSocket.getOutputStream(),"UTF-8"));
 					serverWriter.write(informToServer.toJSONString());
@@ -193,7 +209,7 @@ public class ClientConnection extends Thread {
 					e.printStackTrace();
 				}
 			}
-			
+
 			broadCastInform(msg, ClientState.getInstance().getClient(clientid).getRoom(), reply);
 			ArrayList<String> clientListInRoom = new ArrayList<>();
 			clientListInRoom.addAll(room.getClientsListInRoom());
@@ -217,13 +233,13 @@ public class ClientConnection extends Thread {
 			ClientState.getInstance().removeClient(ClientState.getInstance().getClient(clientid));
 		}
 	}
-	
+
 	private void joinRoom(ClientMessage msg) {
 		String clientid = msg.getIdentity();
 		String roomid = msg.getString("roomid");
 		Client client = ClientState.getInstance().getClient(clientid);
 		String previousRoom = client.getRoom();
-		
+
 		if (client.getOwnedRoom() != null) {
 			JSONObject inform = ServerMessage.roomChange(clientid, previousRoom, previousRoom);
 			client.write(inform.toJSONString());
@@ -265,12 +281,12 @@ public class ClientConnection extends Thread {
 			client.write(inform.toJSONString());
 		}
 	}
-	
+
 	private void deleteRoom(ClientMessage msg) {
 		String clientid = msg.getIdentity();
 		String roomid = msg.getString("roomid");
 		Client client = ClientState.getInstance().getClient(clientid);
-		
+
 		if (RoomManager.getInstance().getLocalRoom(roomid) == null ||
 				client.getOwnedRoom() == null) {
 			JSONObject inform = ServerMessage.deleteRoomToClient(roomid, false);
@@ -282,10 +298,11 @@ public class ClientConnection extends Thread {
 			JSONObject informToServer = ServerMessage.deleteRoomInform(room.getRoomServerid(), roomid);
 			ArrayList<Conf> otherServerList = ServerState.getInstance().getServerList();
 			String mainRoom = "MainHall-" + room.getRoomServerid();
-			
+
 			for (Conf serverConf : otherServerList) {
 				try {
-					Socket serverSocket = new Socket(serverConf.getServerAddress(),serverConf.getCoordinationPort());
+					SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+					SSLSocket serverSocket = (SSLSocket) sslsocketfactory.createSocket(serverConf.getServerAddress(),serverConf.getCoordinationPort());
 					BufferedWriter serverWriter = new BufferedWriter(
 							new OutputStreamWriter(serverSocket.getOutputStream(),"UTF-8"));
 					serverWriter.write(informToServer.toJSONString());
@@ -298,7 +315,7 @@ public class ClientConnection extends Thread {
 					e.printStackTrace();
 				}
 			}
-			
+
 			ArrayList<String> clientListInRoom = new ArrayList<>();
 			clientListInRoom.addAll(room.getClientsListInRoom());
 			ArrayList<String> clientListInMainRoom = new ArrayList<>();
@@ -321,9 +338,9 @@ public class ClientConnection extends Thread {
 			JSONObject inform = ServerMessage.deleteRoomToClient(roomid, false);
 			client.write(inform.toJSONString());
 		}
-		
+
 	}
-	
+
 	private void broadCastInform(String clientName, ArrayList<String> clientList, JSONObject inform) {
 		for (String clientid : clientList) {
 			if (!clientid.equals(clientName)) {
@@ -332,7 +349,7 @@ public class ClientConnection extends Thread {
 			}
 		}
 	}
-	
+
 /*
 	private void broadCastInform(String clientName, String roomid, JSONObject inform) {
 		ArrayList<String> clientList = ClientState.getInstance().getAllClientList();
@@ -346,7 +363,7 @@ public class ClientConnection extends Thread {
 		}
 	}
 */
-	
+
 	private void broadCastInform(ClientMessage msg, String roomid, JSONObject inform) {
 		ArrayList<String> clientList = ClientState.getInstance().getAllClientList();
 		for (String clientid : clientList) {
@@ -358,9 +375,9 @@ public class ClientConnection extends Thread {
 			}
 		}
 	}
-	
+
 	private void broadCastMsgInRoom(ClientMessage msg) {
-		
+
 		ArrayList<String> clientList = ClientState.getInstance().getAllClientList();
 		for (String clientid : clientList) {
 			if (!clientid.equals(msg.getIdentity())) {
@@ -371,7 +388,7 @@ public class ClientConnection extends Thread {
 				}
 			}
 		}
-/*		
+/*
 		ArrayList<Client> clientList = ClientState.getInstance().getClientList();
 		for (Client client : clientList) {
 			if(!client.getClientid().equals(clientid)) {
@@ -381,7 +398,7 @@ public class ClientConnection extends Thread {
 			}
 		}
 */
-	
+
 	}
 
 }

@@ -2,30 +2,34 @@ package myServer2;
 
 /*
  * Name : Min Gao
- * COMP90015 Distributed Systems 2016 SM2 
- * Project1-Multi-Server Chat System  
- * Login Name : ming1 
- * Student Number : 773090 
+ * COMP90015 Distributed Systems 2016 SM2
+ * Project1-Multi-Server Chat System
+ * Login Name : ming1
+ * Student Number : 773090
  */
+//这份文件因为没有生成socket的部分，所以只是把所有Socket改成SSLSocket类
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.net.Socket;
+//更改socket为sslsocket
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 
 public class Client {
 	private String clientid;
 	private String room;
 	private String ownedRoom;
 	private String serverid;
-	private Socket clientSocket;
+	private SSLSocket clientSocket;
 	private BufferedWriter writer;
 	private BufferedReader reader;
 	private boolean isQuitRequestSend;
-	
-	public Client(String clientid, String room, String serverid, Socket clientSocket) {
+
+	//更改socket为sslsocket
+	public Client(String clientid, String room, String serverid, SSLSocket clientSocket) {
 		this.clientid = clientid;
 		this.room = room;
 		this.ownedRoom = null;
@@ -36,14 +40,14 @@ public class Client {
 			reader = new BufferedReader(new InputStreamReader(
 					clientSocket.getInputStream(), "UTF-8"));
 			writer = new BufferedWriter(new OutputStreamWriter(
-					clientSocket.getOutputStream(), "UTF-8"));	
+					clientSocket.getOutputStream(), "UTF-8"));
 		}
 		catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-	
-	public Client(String clientid, String room, String ownedRoom, String serverid, Socket clientSocket) {
+	//更改socket为sslsocket
+	public Client(String clientid, String room, String ownedRoom, String serverid, SSLSocket clientSocket) {
 		this.clientid = clientid;
 		this.room = room;
 		this.ownedRoom = ownedRoom;
@@ -54,13 +58,13 @@ public class Client {
 			reader = new BufferedReader(new InputStreamReader(
 					clientSocket.getInputStream(), "UTF-8"));
 			writer = new BufferedWriter(new OutputStreamWriter(
-					clientSocket.getOutputStream(), "UTF-8"));	
+					clientSocket.getOutputStream(), "UTF-8"));
 		}
 		catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public String getClientid() {
 		return clientid;
 	}
@@ -76,8 +80,8 @@ public class Client {
 	public String getServerid() {
 		return serverid;
 	}
-	
-	public Socket getClientSocket() {
+	//更改socket为sslsocket
+	public SSLSocket getClientSocket() {
 		return clientSocket;
 	}
 
@@ -88,7 +92,7 @@ public class Client {
 		}
 		return null;
 	}
-	
+
 	public void write(String msg) {
 		try {
 			writer.write(msg);
@@ -105,16 +109,16 @@ public class Client {
 			//e.printStackTrace();
 		}
 	}
-	
+
 	public synchronized void createRoom(String roomid) {
 		this.room = roomid;
 		this.ownedRoom = roomid;
 	}
-	
+
 	public synchronized void changeRoom(String roomid) {
 		this.room = roomid;
 	}
-	
+
 	public synchronized void deleteRoom() {
 		this.ownedRoom = null;
 	}

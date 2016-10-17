@@ -2,19 +2,25 @@ package myServer2;
 
 /*
  * Name : Min Gao
- * COMP90015 Distributed Systems 2016 SM2 
- * Project1-Multi-Server Chat System  
- * Login Name : ming1 
- * Student Number : 773090 
+ * COMP90015 Distributed Systems 2016 SM2
+ * Project1-Multi-Server Chat System
+ * Login Name : ming1
+ * Student Number : 773090
  */
+
+//这份更改了socket,serversocket 为sslsocket,sslserversocket，其他更改也都是格式原因
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.net.ServerSocket;
-import java.net.Socket;
+
+import javax.net.ssl.SSLServerSocket;
+import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+
 import java.util.ArrayList;
 
 import org.json.simple.JSONObject;
@@ -26,20 +32,30 @@ public class NewIdentityCheckerThread extends Thread {
 	private String serverid;
     volatile private boolean isRunning = true;
 	private JSONParser parser = new JSONParser();
-	
+
 	public NewIdentityCheckerThread(int clientport, String serverid) {
 		this.clientport = clientport;
 		this.serverid = serverid;
 	}
-	
+
 	@Override
 	public void run() {
-		ServerSocket listeningClientSocket = null;
-		Socket clientSocket = null;
+		//新加入为了使ssl能够使用而更改的设置,名字再议
+		System.setProperty("javax.net.ssl.keyStore","kserver.keystore");
+		System.setProperty("javax.net.ssl.trustStore", "tclient.keystore");
+		System.setProperty("javax.net.ssl.keyStorePassword","123456");
+		System.setProperty("javax.net.debug","all");
+
+		//更改serversocket为sslserversocket
+		SSLServerSocket listeningClientSocket = null;
+		//更改socket为sslsocket
+		SSLSocket clientSocket = null;
 		try {
-			listeningClientSocket = new ServerSocket(clientport);
+			//更改serversocket为sslserversocket
+			SSLServerSocketFactory sslserversocketfactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+			listeningClientSocket = (SSLServerSocket) sslserversocketfactory.createServerSocket(clientport);
 			while(isRunning) {
-				clientSocket = listeningClientSocket.accept();
+				clientSocket = (SSLSocket) listeningClientSocket.accept();
 				//System.out.println("A new client is connected!");
 				BufferedReader reader = new BufferedReader(
 						new InputStreamReader(clientSocket.getInputStream(), "UTF-8"));
@@ -49,7 +65,7 @@ public class NewIdentityCheckerThread extends Thread {
 				JSONObject msgJsonObj = (JSONObject) parser.parse(msg);
 				String msgType = (String) msgJsonObj.get("type");
 				String clientid = (String) msgJsonObj.get("identity");
-				
+
 				if (msgType.equals("newidentity")) {
 					//System.out.println(ClientState.getInstance().isClientidExist(clientid));
 					if (ClientState.getInstance().isClientidExist(clientid) ||
@@ -59,13 +75,15 @@ public class NewIdentityCheckerThread extends Thread {
 						writer.newLine();
 						writer.flush();
 						continue;
-						
+
 					}
 					ArrayList<Conf> otherServerList = ServerState.getInstance().getServerList();
 					String request = ServerMessage.lockIdentityRequest(serverid, clientid).toJSONString();
 					boolean vote = true;
 					for (Conf serverConf : otherServerList) {
-						Socket socket = new Socket(serverConf.getServerAddress(),serverConf.getCoordinationPort());
+						//更改socket为sslsocket
+						SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+						SSLSocket socket = (SSLSocket) sslsocketfactory.createSocket(serverConf.getServerAddress(),serverConf.getCoordinationPort());
 						BufferedReader serverReader = new BufferedReader(
 								new InputStreamReader(socket.getInputStream(), "UTF-8"));
 						BufferedWriter serverWriter = new BufferedWriter(
@@ -78,11 +96,11 @@ public class NewIdentityCheckerThread extends Thread {
 						vote = vote && (((String) replyJsonObj.get("locked")).equals("true"));
 						socket.close();
 					}
-					
+
 					writer.write(ServerMessage.newIdentityReplyToClient(vote).toJSONString());
 					writer.newLine();
 					writer.flush();
-					
+
 					if (vote) {
 						String room = "MainHall-" + serverid;
 						Client newClient = new Client(clientid, room, serverid, clientSocket);
@@ -92,7 +110,7 @@ public class NewIdentityCheckerThread extends Thread {
 						writer.write(ServerMessage.roomChange(clientid, "", room).toJSONString());
 						writer.newLine();
 						writer.flush();
-						
+
 						ArrayList<String> clientList = ClientState.getInstance().getAllClientList();
 						for (String clientName : clientList) {
 							if (!clientName.equals(clientid)) {
@@ -108,9 +126,11 @@ public class NewIdentityCheckerThread extends Thread {
 						writer.close();
 						clientSocket.close();
 					}
-					
+
 					for (Conf serverConf : otherServerList) {
-						Socket socket = new Socket(serverConf.getServerAddress(),serverConf.getCoordinationPort());
+						//更改socket为sslsocket
+						SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+						SSLSocket socket = (SSLSocket) sslsocketfactory.createSocket(serverConf.getServerAddress(),serverConf.getCoordinationPort());
 						BufferedWriter serverWriter = new BufferedWriter(
 								new OutputStreamWriter(socket.getOutputStream(),"UTF-8"));
 						request = ServerMessage.releaseIdentityLock(serverid, clientid).toJSONString();
@@ -120,7 +140,7 @@ public class NewIdentityCheckerThread extends Thread {
 						serverWriter.close();
 						socket.close();
 					}
-						
+
 				}
 				if (msgType.equals("movejoin")) {	//need to consider a person regist same id there
 					String mainRoom = "MainHall-" + serverid;
@@ -132,7 +152,7 @@ public class NewIdentityCheckerThread extends Thread {
 						writer.newLine();
 						writer.flush();
 						continue;
-						
+
 					}
 					if (!RoomManager.getInstance().isLocalRoomExist(toRoom)) {
 						Client newClient = new Client(clientid, mainRoom, serverid, clientSocket);
@@ -141,7 +161,7 @@ public class NewIdentityCheckerThread extends Thread {
 						writer.write(ServerMessage.serverChange(serverid, true).toJSONString());
 						writer.newLine();
 						writer.flush();
-						
+
 						ArrayList<String> clientList = ClientState.getInstance().getAllClientList();
 						for (String clientName : clientList) {
 							if(ClientState.getInstance().getClient(clientName).getRoom().equals(
@@ -158,7 +178,7 @@ public class NewIdentityCheckerThread extends Thread {
 						writer.write(ServerMessage.serverChange(serverid, true).toJSONString());
 						writer.newLine();
 						writer.flush();
-						
+
 						ArrayList<String> clientList = ClientState.getInstance().getAllClientList();
 						for (String clientName : clientList) {
 							if(ClientState.getInstance().getClient(clientName).getRoom().equals(
@@ -182,7 +202,7 @@ public class NewIdentityCheckerThread extends Thread {
 						clientSocket.close();
 					}
 				}
-				
+
 			}
 		}
 		catch (IOException e) {
