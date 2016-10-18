@@ -36,7 +36,7 @@ public class MainServerServerConnection extends Thread{
 				String msg = reader.readLine();
 				JSONObject msgJsonObj = (JSONObject) parser.parse(msg);
 				//读取送过来的有关想要连接的server的server的信息
-				String serverid = (String) msgJsonObj.get("serverAddress");
+				String serverid = (String) msgJsonObj.get("serverid");
 				String serverAddress = (String) msgJsonObj.get("serverAddress");
 				int clientsPort = Integer.parseInt((String) msgJsonObj.get("clientsPort"));
 				int coordinationPort = Integer.parseInt((String) msgJsonObj.get("coordinationPort"));
@@ -48,6 +48,7 @@ public class MainServerServerConnection extends Thread{
 				writer.write(newServerReply.toJSONString());
 				writer.newLine();
 				writer.flush();
+
 				//2.对所有已存在的old server发送一条增加一个新server的信息
 				JSONObject notifyOldSerevr = ServerMessage.noticeNewServerComing(serverConf);
 				ArrayList<Conf> old_server_state = MainServer.getInstance().GetServerState();
@@ -70,7 +71,8 @@ public class MainServerServerConnection extends Thread{
 				MainServer.getInstance().AddRoomBelongingServer(serverid);
 
 				//运用sslsocket和conf的信息（包括位置），开始一个心跳检测
-				new HeartBeatTest(new_server_socket,serverConf).start();
+				sleep(10000);
+				new HeartBeatTest(new_server_socket,serverConf,reader).start();
 			}
 		}
 		catch(Exception e){

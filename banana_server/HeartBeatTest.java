@@ -10,21 +10,22 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 //这个thread只建立心跳连接并未送任何信息过去，所以不用在server处理json里面进行处理
 public class HeartBeatTest extends Thread{
-	
+
 	SSLSocket sslSocket;
 	Conf serverConf;
 	JSONParser parser = new JSONParser();
-	
-	public HeartBeatTest(SSLSocket sslSocket,Conf serverConf){
+	BufferedReader reader;
+
+	public HeartBeatTest(SSLSocket sslSocket,Conf serverConf,BufferedReader reader){
 		this.sslSocket = sslSocket;
 		this.serverConf = serverConf;
+		this.reader = reader;
 	}
-	
+
 	@Override
 	public void run() {
 		try{
 			sslSocket.setSoTimeout(20000);
-			BufferedReader reader = new BufferedReader(new InputStreamReader(sslSocket.getInputStream(), "UTF-8"));
 			while(true){
 				String msg = reader.readLine();
 				JSONObject msgJsonObj = (JSONObject) parser.parse(msg);

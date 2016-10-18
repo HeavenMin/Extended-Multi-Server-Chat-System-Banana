@@ -52,7 +52,7 @@ public class MainServer {
 		server_connection.remove(serverSocket);
 		server_state.remove(serverConf);
 		ArrayList<Integer> should_remove = new ArrayList<Integer>();
-		for(int i = room_belong_server.size() -1 ; i>=0 ; i--){
+		for(int i = (room_belong_server.size() -1) ; i>=0 ; i--){
 			if(room_belong_server.get(i).equals(serverConf.getServerid())){
 				should_remove.add(i);
 			}

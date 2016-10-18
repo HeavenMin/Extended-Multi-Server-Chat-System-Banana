@@ -45,6 +45,8 @@ public class MainServerClientConnection extends Thread{
 				if(index != -1 && all_password.get(index).equals(password) && MainServer.getInstance().CheckIDLockedOrLockIt(index)){
 					exist = true;
 				}
+				if(!exist){
+				}
 				//返回成功与否给用户
 				JSONObject reply = ServerMessage.userLogin(exist,MainServer.getInstance().GetServerState());
 				writer.write(reply.toJSONString());
