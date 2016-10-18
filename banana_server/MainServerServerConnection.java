@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -49,9 +50,13 @@ public class MainServerServerConnection extends Thread{
 				writer.flush();
 				//2.对所有已存在的old server发送一条增加一个新server的信息
 				JSONObject notifyOldSerevr = ServerMessage.noticeNewServerComing(serverConf);
-				ArrayList<SSLSocket> old_server_connection = MainServer.getInstance().GetServerConnection();
-				for(int i=0;i<old_server_connection.size();i++){
-					BufferedWriter old_server_writer = new BufferedWriter(new OutputStreamWriter(old_server_connection.get(i).getOutputStream(), "UTF-8"));
+				ArrayList<Conf> old_server_state = MainServer.getInstance().GetServerState();
+				for(int i=0;i<old_server_state.size();i++){
+					String server_address = old_server_state.get(i).getServerAddress().getHostAddress();
+					int server_coordinate_port = old_server_state.get(i).getCoordinationPort();
+					SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+					SSLSocket socket = (SSLSocket) sslsocketfactory.createSocket(server_address,server_coordinate_port);
+					BufferedWriter old_server_writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
 					old_server_writer.write(notifyOldSerevr.toJSONString());
 					writer.newLine();
 					writer.flush();
