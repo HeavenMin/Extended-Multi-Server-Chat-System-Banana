@@ -41,12 +41,6 @@ public class MainServerServerConnection extends Thread{
 				int coordinationPort = Integer.parseInt((String) msgJsonObj.get("coordinationPort"));
 				//将信息整合到一个conf类里
 				Conf serverConf = new Conf(serverid, serverAddress, clientsPort, coordinationPort);
-				//把新server的信息加入到已连接server列表中，同时在对应位置保存conf的信息
-				MainServer.getInstance().AddServerConnection(new_server_socket);
-				MainServer.getInstance().AddServerState(serverConf);
-				//添加一个mainhall
-				MainServer.getInstance().AddRoom("MainHall-"+serverid);
-				MainServer.getInstance().AddRoomBelongingServer(serverid);
 
 				//开始向各个服务器发送各种信息，包括1.对想要连接main server的服务器告知所有其他已存在服务器的信息,包括房间信息
 				JSONObject newServerReply = ServerMessage.newServerReply(MainServer.getInstance().GetServerState(),MainServer.getInstance().GetRooms(),MainServer.getInstance().GetRoomBelongServer());
@@ -62,6 +56,13 @@ public class MainServerServerConnection extends Thread{
 					writer.newLine();
 					writer.flush();
 				}
+
+				//把新server的信息加入到已连接server列表中，同时在对应位置保存conf的信息
+				MainServer.getInstance().AddServerConnection(new_server_socket);
+				MainServer.getInstance().AddServerState(serverConf);
+				//添加一个mainhall
+				MainServer.getInstance().AddRoom("MainHall-"+serverid);
+				MainServer.getInstance().AddRoomBelongingServer(serverid);
 
 				//运用sslsocket和conf的信息（包括位置），开始一个心跳检测
 				new HeartBeatTest(new_server_socket,serverConf).start();
