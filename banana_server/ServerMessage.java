@@ -223,7 +223,7 @@ public class ServerMessage {
 
 
 	//这个方法是让main server来给新server有关老server信息的
-	public static JSONObject newServerReply(ArrayList<Conf> serverConfs){
+	public static JSONObject newServerReply(ArrayList<Conf> serverConfs,ArrayList<String> rooms,ArrayList<String> rooms_belong){
 		String[] serverid = new String[serverConfs.size()];
 		InetAddress[] serverAddress = new InetAddress[serverConfs.size()];
 		int[] clientsPort = new int[serverConfs.size()];
@@ -240,17 +240,24 @@ public class ServerMessage {
 		JSONArray serverAddress_array = new JSONArray();
 		JSONArray clientsPort_array = new JSONArray();
 		JSONArray coordinationPort_array = new JSONArray();
+		JSONArray room_array = new JSONArray();
+		JSONArray room_belonging_server_array = new JSONArray();
 		for(int i=0; i<serverid.length; i++){
 			serverid_array.add(serverid[i]);
 			serverAddress_array.add(serverAddress[i]);
 			clientsPort_array.add(clientsPort[i]);
 			coordinationPort_array.add(coordinationPort[i]);
 		}
+		for(int i=0;i<rooms.size();i++){
+			room_array.add(rooms.get(i));
+			room_belonging_server_array.add(rooms_belong.get(i));
+		}
 		reply.put("serveridArray", serverid_array);
 		reply.put("serverAddressArray", serverAddress_array);
 		reply.put("clientsPortArray", clientsPort_array);
 		reply.put("coordinationPortArray", coordinationPort_array);
-
+		reply.put("roomArray", room_array);
+		reply.put("roomBelongingServerArray",room_belonging_server_array);
 		return reply;
 	}
 
@@ -272,8 +279,27 @@ public class ServerMessage {
 
 
 	//这个方法是让main server告诉所有server,有一个server心跳连接失败了，所有server该删掉所有有关该server的房间信息了
-	public static JSONObject notifyOneServerDown(){
-		return null;
+	public static JSONObject notifyOneServerDown(Conf serverConf){
+		JSONObject heartbeatfail = new JSONObject();
+		heartbeatfail.put("type", "hearbeatfail");
+		heartbeatfail.put("failserver", serverConf.getServerid());
+		return heartbeatfail;
 	}
 
+	//为了给增加主服务器房间而添加的方法，第一个输入量为房间名字，第二个输入量为server名字
+	public static JSONObject AddRoom(String roomid,String serverid){
+		JSONObject addroom = new JSONObject();
+		addroom.put("type", "addroom");
+		addroom.put("roomID", roomid);
+		addroom.put("serverID", serverid);
+		return addroom;
+	}
+
+	//为了删除主服务器房间而添加的方法
+	public static JSONObject deleteRoom(String roomid,String serverid){
+		JSONObject deleteroom = new JSONObject();
+		deleteroom.put("type", "deleteroom");
+		deleteroom.put("roomID", roomid);
+		return deleteroom;
+	}
 }

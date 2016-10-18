@@ -44,15 +44,16 @@ public class MainServerServerConnection extends Thread{
 				//把新server的信息加入到已连接server列表中，同时在对应位置保存conf的信息
 				MainServer.getInstance().AddServerConnection(new_server_socket);
 				MainServer.getInstance().AddServerState(serverConf);
+				//添加一个mainhall
+				MainServer.getInstance().AddRoom("MainHall-"+serverid);
+				MainServer.getInstance().AddRoomBelongingServer(serverid);
 
-				//开始向各个服务器发送各种信息，包括1.对想要连接main server的服务器告知所有其他已存在服务器的信息
-				//2.对所有已存在的old server发送一条增加一个新server的信息
-
-				JSONObject newServerReply = ServerMessage.newServerReply(MainServer.getInstance().GetServerState());
+				//开始向各个服务器发送各种信息，包括1.对想要连接main server的服务器告知所有其他已存在服务器的信息,包括房间信息
+				JSONObject newServerReply = ServerMessage.newServerReply(MainServer.getInstance().GetServerState(),MainServer.getInstance().GetRooms(),MainServer.getInstance().GetRoomBelongServer());
 				writer.write(newServerReply.toJSONString());
 				writer.newLine();
 				writer.flush();
-
+				//2.对所有已存在的old server发送一条增加一个新server的信息
 				JSONObject notifyOldSerevr = ServerMessage.noticeNewServerComing(serverConf);
 				ArrayList<SSLSocket> old_server_connection = MainServer.getInstance().GetServerConnection();
 				for(int i=0;i<old_server_connection.size();i++){
