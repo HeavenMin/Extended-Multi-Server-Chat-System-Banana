@@ -58,8 +58,8 @@ public class MainServerServerConnection extends Thread{
 					SSLSocket socket = (SSLSocket) sslsocketfactory.createSocket(server_address,server_coordinate_port);
 					BufferedWriter old_server_writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
 					old_server_writer.write(notifyOldSerevr.toJSONString());
-					writer.newLine();
-					writer.flush();
+					old_server_writer.newLine();
+					old_server_writer.flush();
 				}
 
 				//把新server的信息加入到已连接server列表中，同时在对应位置保存conf的信息
