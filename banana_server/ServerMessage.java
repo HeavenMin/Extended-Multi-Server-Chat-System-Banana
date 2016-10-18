@@ -1,4 +1,4 @@
-package myServer2;
+package myServer3;
 
 /*
  * Name : Min Gao
@@ -244,7 +244,7 @@ public class ServerMessage {
 		JSONArray room_belonging_server_array = new JSONArray();
 		for(int i=0; i<serverid.length; i++){
 			serverid_array.add(serverid[i]);
-			serverAddress_array.add(serverAddress[i]);
+			serverAddress_array.add(serverAddress[i].getHostAddress());
 			clientsPort_array.add(clientsPort[i]);
 			coordinationPort_array.add(coordinationPort[i]);
 		}
@@ -287,7 +287,7 @@ public class ServerMessage {
 	}
 
 	//为了给增加主服务器房间而添加的方法，第一个输入量为房间名字，第二个输入量为server名字
-	public static JSONObject AddRoom(String roomid,String serverid){
+	public static JSONObject addRoom(String roomid,String serverid){
 		JSONObject addroom = new JSONObject();
 		addroom.put("type", "addroom");
 		addroom.put("roomID", roomid);
@@ -296,10 +296,17 @@ public class ServerMessage {
 	}
 
 	//为了删除主服务器房间而添加的方法
-	public static JSONObject deleteRoom(String roomid,String serverid){
+	public static JSONObject deleteRoom(String roomid){
 		JSONObject deleteroom = new JSONObject();
 		deleteroom.put("type", "deleteroom");
 		deleteroom.put("roomID", roomid);
 		return deleteroom;
 	}
+	
+	public static JSONObject checkBeat() {
+		JSONObject checkbeat = new JSONObject();
+		checkbeat.put("type", "checkbeat");
+		return checkbeat;
+	}
+	
 }

@@ -1,4 +1,4 @@
-package myServer2;
+package myServer3;
 
 
 /*
@@ -8,7 +8,7 @@ package myServer2;
  * Login Name : ming1
  * Student Number : 773090
  */
-//这份更改了所有socket为sslsocket,然后因为格式原因，每个定义socket上面都加入了一行SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+//è¿™ä»½æ›´æ”¹äº†æ‰€æœ‰socketä¸ºsslsocket,ç„¶å�Žå› ä¸ºæ ¼å¼�åŽŸå› ï¼Œæ¯�ä¸ªå®šä¹‰socketä¸Šé�¢éƒ½åŠ å…¥äº†ä¸€è¡ŒSSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.InetAddress;
-//更改socket为sslsocket
+//æ›´æ”¹socketä¸ºsslsocket
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import java.util.ArrayList;
@@ -28,14 +28,19 @@ public class ClientConnection extends Thread {
 
 	volatile private boolean isRunning = true;
 	private JSONParser parser = new JSONParser();
+	
+	private MainServerInfo mainServer;
+	
+	public ClientConnection(MainServerInfo mainServer) {
+		this.mainServer = mainServer;
+	}
 
 	@Override
 	public void run() {
-		//新加入为了使ssl能够使用而更改的设置,名字再议
+
 		System.setProperty("javax.net.ssl.keyStore","kserver.keystore");
 		System.setProperty("javax.net.ssl.trustStore", "tclient.keystore");
 		System.setProperty("javax.net.ssl.keyStorePassword","123456");
-		System.setProperty("javax.net.debug","all");
 
 		while (isRunning) {
 			try {
@@ -110,7 +115,7 @@ public class ClientConnection extends Thread {
 		boolean vote = true;
 		try {
 			for (Conf serverConf : otherServerList) {
-				//更改socket为sslsocket
+				//æ›´æ”¹socketä¸ºsslsocket
 				SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
 				SSLSocket socket = (SSLSocket) sslsocketfactory.createSocket(serverConf.getServerAddress(),serverConf.getCoordinationPort());
 				BufferedReader serverReader = new BufferedReader(
@@ -127,7 +132,7 @@ public class ClientConnection extends Thread {
 			}
 
 			for (Conf serverConf : otherServerList) {
-				//更改socket为sslsocket
+				//æ›´æ”¹socketä¸ºsslsocket
 				SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
 				SSLSocket serverSocket = (SSLSocket) sslsocketfactory.createSocket(serverConf.getServerAddress(),serverConf.getCoordinationPort());
 				BufferedWriter serverWriter = new BufferedWriter(
@@ -158,6 +163,10 @@ public class ClientConnection extends Thread {
 				JSONObject inform = ServerMessage.roomChange(roomOwner, previousRoom, roomid);
 				broadCastInform(msg, roomid, inform);
 				broadCastInform(msg, previousRoom, inform);
+				
+				// need to add send msg to main server
+				mainServer.write(ServerMessage.addRoom(
+						roomid, ServerState.getInstance().getThisServer().getServerid()).toJSONString());
 			}
 
 		}
@@ -194,7 +203,7 @@ public class ClientConnection extends Thread {
 
 			for (Conf serverConf : otherServerList) {
 				try {
-					//更改socket为sslsocket
+					//æ›´æ”¹socketä¸ºsslsocket
 					SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
 					SSLSocket serverSocket = (SSLSocket) sslsocketfactory.createSocket(serverConf.getServerAddress(),serverConf.getCoordinationPort());
 					BufferedWriter serverWriter = new BufferedWriter(
@@ -333,6 +342,8 @@ public class ClientConnection extends Thread {
 			client.write(inform.toJSONString());
 			RoomManager.getInstance().deleteRoom(roomid);
 			client.deleteRoom();
+			
+			mainServer.write(ServerMessage.deleteRoom(roomid).toJSONString());
 		}
 		else {
 			JSONObject inform = ServerMessage.deleteRoomToClient(roomid, false);

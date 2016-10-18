@@ -1,4 +1,4 @@
-package myServer2;
+package myServer3;
 
 /*
  * Name : Min Gao
@@ -8,7 +8,7 @@ package myServer2;
  * Student Number : 773090
  */
 
-//这份更改了socket,serversocket 为sslsocket,sslserversocket，其他更改也都是格式原因
+//è¿™ä»½æ›´æ”¹äº†socket,serversocket ä¸ºsslsocket,sslserversocketï¼Œå…¶ä»–æ›´æ”¹ä¹Ÿéƒ½æ˜¯æ ¼å¼�åŽŸå› 
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -40,18 +40,17 @@ public class NewIdentityCheckerThread extends Thread {
 
 	@Override
 	public void run() {
-		//新加入为了使ssl能够使用而更改的设置,名字再议
+		//æ–°åŠ å…¥ä¸ºäº†ä½¿sslèƒ½å¤Ÿä½¿ç”¨è€Œæ›´æ”¹çš„è®¾ç½®,å��å­—å†�è®®
 		System.setProperty("javax.net.ssl.keyStore","kserver.keystore");
 		System.setProperty("javax.net.ssl.trustStore", "tclient.keystore");
 		System.setProperty("javax.net.ssl.keyStorePassword","123456");
-		System.setProperty("javax.net.debug","all");
 
-		//更改serversocket为sslserversocket
+		//æ›´æ”¹serversocketä¸ºsslserversocket
 		SSLServerSocket listeningClientSocket = null;
-		//更改socket为sslsocket
+		//æ›´æ”¹socketä¸ºsslsocket
 		SSLSocket clientSocket = null;
 		try {
-			//更改serversocket为sslserversocket
+			//æ›´æ”¹serversocketä¸ºsslserversocket
 			SSLServerSocketFactory sslserversocketfactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
 			listeningClientSocket = (SSLServerSocket) sslserversocketfactory.createServerSocket(clientport);
 			while(isRunning) {
@@ -81,7 +80,7 @@ public class NewIdentityCheckerThread extends Thread {
 					String request = ServerMessage.lockIdentityRequest(serverid, clientid).toJSONString();
 					boolean vote = true;
 					for (Conf serverConf : otherServerList) {
-						//更改socket为sslsocket
+						//æ›´æ”¹socketä¸ºsslsocket
 						SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
 						SSLSocket socket = (SSLSocket) sslsocketfactory.createSocket(serverConf.getServerAddress(),serverConf.getCoordinationPort());
 						BufferedReader serverReader = new BufferedReader(
@@ -128,7 +127,7 @@ public class NewIdentityCheckerThread extends Thread {
 					}
 
 					for (Conf serverConf : otherServerList) {
-						//更改socket为sslsocket
+						//æ›´æ”¹socketä¸ºsslsocket
 						SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
 						SSLSocket socket = (SSLSocket) sslsocketfactory.createSocket(serverConf.getServerAddress(),serverConf.getCoordinationPort());
 						BufferedWriter serverWriter = new BufferedWriter(

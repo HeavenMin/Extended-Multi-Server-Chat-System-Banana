@@ -1,4 +1,4 @@
-package myServer2;
+package myServer3;
 
 /*
  * Name : Min Gao
@@ -9,6 +9,8 @@ package myServer2;
  */
 
 import java.io.IOException;
+import java.net.InetAddress;
+
 import org.json.simple.parser.ParseException;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -20,7 +22,7 @@ public class MyServer {
 		//get command line values from -n and -l
 		MyServerCmdLineValues serverValues = new MyServerCmdLineValues();
 		CmdLineParser parser = new CmdLineParser(serverValues);
-		ConfLoader confloader = new ConfLoader();
+	//	ConfLoader confloader = new ConfLoader();
 		Conf server = null;
 		
 	//	ServerSocket listeningClientSocket = null;
@@ -28,9 +30,38 @@ public class MyServer {
 		
 		try {
 			parser.parseArgument(args);
-			//serverid = serverValues.getServerid();
-			String serverConfPath = serverValues.getServerConf();
+			server = new Conf(serverValues.getServerid(), InetAddress.getLocalHost(),
+								serverValues.getClientsPort(), serverValues.getCoordinationPort());
+			ServerState.getInstance().setThisServer(server);
+			RoomManager.getInstance().createRoom(
+					"MainHall-" + serverValues.getServerid(), "", serverValues.getServerid());
+			String mainServerAddress = serverValues.getMainServerAddress();
+			int mainServerPort = serverValues.getMainServerPort();
+			MainServerInfo mainServer = new MainServerInfo(mainServerAddress, mainServerPort);
 			
+			System.out.println("        Serverid = " + server.getServerid());	//for test
+			System.out.println("   ServerAddress = " + server.getServerAddress());	//for test
+			System.out.println("     ClientsPort = " + server.getClientsPort());	//for test
+			System.out.println("CoordinationPort = " + server.getCoordinationPort());	//for test
+	//		System.out.println("Total server number: " +
+	//				(ServerState.getInstance().getServerList().size() + 1));
+			System.out.println("The server " + server.getServerid() + " is running!");
+			
+			
+			
+			new NewServerRegister(server, mainServer).start();
+			
+			new NewIdentityCheckerThread(server.getClientsPort(), server.getServerid()).start();
+			new ServerCommunicationThread(server.getCoordinationPort()).start();
+			new ClientMessageReader().start();
+			new ClientConnection(mainServer).start();
+			
+			
+			
+			//serverid = serverValues.getServerid();
+	//		String serverConfPath = serverValues.getServerConf();
+	
+			/*
 			server = confloader.loadConf(serverValues.getServerid(), serverConfPath);
 			if (server != null) {
 	//			listeningClientSocket = new ServerSocket(server.getClientsPort());
@@ -53,12 +84,7 @@ public class MyServer {
 				System.out.println("Do not have this server in the confguiration!");
 				System.exit(0);
 			}
-			
-			new NewIdentityCheckerThread(server.getClientsPort(), server.getServerid()).start();
-			new ServerCommunicationThread(server.getCoordinationPort()).start();
-			new ClientMessageReader().start();
-			new ClientConnection().start();
-			
+			*/
 
 		}
 		catch (CmdLineException e) {

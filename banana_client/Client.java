@@ -1,5 +1,11 @@
 package MyClient;
 
+/*
+ * Name : Lang Lin, Min Gao, Xing Jiang, Ziang Xu
+ * COMP90015 Distributed Systems 2016 SM2 
+ * Project2-Extended Multi-Server Chat System  
+ */
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -22,7 +28,7 @@ public class Client {
 
 	public static void main(String[] args) throws IOException, ParseException {
 		keyboard = new Scanner(System.in);
-		String userName;
+		String userName;	
 		String password;
 		String isApproved = null;
 		SSLSocket mainServerSocket = null;
@@ -32,7 +38,7 @@ public class Client {
 		System.setProperty("javax.net.ssl.keyStore","kserver.keystore");
 		System.setProperty("javax.net.ssl.trustStore", "tclient.keystore");
 		System.setProperty("javax.net.ssl.keyStorePassword","123456");
-		System.setProperty("javax.net.debug","all");
+//		System.setProperty("javax.net.debug","all");
 		SSLSocket socket = null;
 		String identity = null;
 		boolean debug = false;
@@ -47,7 +53,7 @@ public class Client {
 				int port = values.getPort();
 				debug = values.isDebug();
 				SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-				mainServerSocket = (SSLSocket) sslsocketfactory.createSocket("172.16.42.4", 80);
+				mainServerSocket = (SSLSocket) sslsocketfactory.createSocket(hostname, port);
 //				mainServerOut = new DataOutputStream(mainServerSocket.getOutputStream());
 				reader = new BufferedReader(
 						new InputStreamReader(mainServerSocket.getInputStream(), "UTF-8"));
@@ -56,29 +62,29 @@ public class Client {
 			} catch (CmdLineException e) {
 				e.printStackTrace();
 			}
-
+			
 			State state = new State(identity, "");
-
+			
 			System.out.println("Please enter your username: ");
 			userName = keyboard.nextLine();
 			System.out.println("Please enter your password: ");
 			password = keyboard.nextLine();
-
+			
 			writer.write(ClientMessages.sendUsernameAndPassword(userName, password).toJSONString());
 			writer.newLine();
 			writer.flush();
-
+			
 			String feedback = reader.readLine();
-
+			
 			JSONParser jsonparser = new JSONParser();
 			JSONObject feedbackJsonObj = (JSONObject) jsonparser.parse(feedback);
 			String feedbackType = (String) feedbackJsonObj.get("type");
 			if (feedbackType.equals("clientAuthen")) {
 				isApproved = (String) feedbackJsonObj.get("approved");
-
-				System.out.println("mingao" + isApproved);
-				System.out.println(feedback);	//for test
-
+				
+				System.out.println("the request to the chat server is :" + isApproved);
+				//System.out.println(feedback);	//for test
+				
 				if (isApproved.equals("true")) {
 					JSONArray serverIdArray = (JSONArray) feedbackJsonObj.get("serveridArray");
 					JSONArray serverAddressArray = (JSONArray) feedbackJsonObj.get("serverAddressArray");
@@ -96,6 +102,7 @@ public class Client {
 					mainServerSocket.close();
 				}
 				else {
+					System.out.println("The username or the password is not correct!.");
 					System.exit(1);
 				}
 			}
@@ -103,19 +110,19 @@ public class Client {
 				System.exit(1);
 			}
 
-
+			
 			if (isApproved.equals("true")) {
 				// start sending thread
 				MessageSendThread messageSendThread = new MessageSendThread(socket, state, debug);
 				Thread sendThread = new Thread(messageSendThread);
 				sendThread.start();
-
+				
 				// start receiving thread
 				Thread receiveThread = new Thread(new MessageReceiveThread(socket, state, messageSendThread, debug));
 				receiveThread.start();
 			}
-
-
+			
+			
 		} catch (UnknownHostException e) {
 			System.out.println("Unknown host");
 		} catch (IOException e) {

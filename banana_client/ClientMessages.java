@@ -1,5 +1,11 @@
 package MyClient;
 
+/*
+ * Name : Lang Lin, Min Gao, Xing Jiang, Ziang Xu
+ * COMP90015 Distributed Systems 2016 SM2 
+ * Project2-Extended Multi-Server Chat System  
+ */
+
 import org.json.simple.JSONObject;
 
 public class ClientMessages {

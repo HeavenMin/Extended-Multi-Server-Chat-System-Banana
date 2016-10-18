@@ -1,4 +1,4 @@
-package myServer2;
+package myServer3;
 
 /*
  * Name : Min Gao
@@ -13,19 +13,21 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.net.Socket;
+
+import javax.net.ssl.SSLSocket;
+
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 public class ServerMsgDealerThread extends Thread {
-	private Socket serverSocket;
+	private SSLSocket serverSocket;
 	private BufferedReader reader;
 	private BufferedWriter writer;
 	private JSONParser parser = new JSONParser();
 	volatile private boolean isRunning = true;
 
-	public ServerMsgDealerThread(Socket serverSocket) {
+	public ServerMsgDealerThread(SSLSocket serverSocket) {
 		try {
 			this.serverSocket = serverSocket;
 			System.out.println("A new server socket created!");// just for test
@@ -99,6 +101,16 @@ public class ServerMsgDealerThread extends Thread {
 					String remoteRoom = (String) msgJsonObj.get("roomid");
 					RoomManager.getInstance().removeOtherServerRoom(remoteRoom);
 
+				}
+				
+				if (msgType.equals("newserver")) {
+					String serverid = (String) msgJsonObj.get("serverid");
+					String serverAddress = (String) msgJsonObj.get("serverAddress");
+					int clientsPort = Integer.parseInt((String) msgJsonObj.get("clientsPort"));
+					int coordinationPort = Integer.parseInt((String) msgJsonObj.get("coordinationPort"));
+					Conf newComeServer = new Conf(serverid, serverAddress, clientsPort, coordinationPort);
+					ServerState.getInstance().serverConnected(newComeServer);
+					RoomManager.getInstance().addOtherServerRoom("MainHall-" + serverid, serverid);
 				}
 				isRunning = false;
 			}

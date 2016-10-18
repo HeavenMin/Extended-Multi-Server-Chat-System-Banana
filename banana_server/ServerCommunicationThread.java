@@ -1,4 +1,4 @@
-package myServer2;
+package myServer3;
 
 /*
  * Name : Min Gao
@@ -9,7 +9,7 @@ package myServer2;
  * Student Number : 773090
  */
 
-//这份更改了serversocket 为sslserversocket，其他更改也都是格式原因
+//è¿™ä»½æ›´æ”¹äº†serversocket ä¸ºsslserversocketï¼Œå…¶ä»–æ›´æ”¹ä¹Ÿéƒ½æ˜¯æ ¼å¼�åŽŸå› 
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -38,11 +38,10 @@ public class ServerCommunicationThread extends Thread {
 
 	@Override
 	public void run() {
-		//新加入为了使ssl能够使用而更改的设置,名字再议
+		//æ–°åŠ å…¥ä¸ºäº†ä½¿sslèƒ½å¤Ÿä½¿ç”¨è€Œæ›´æ”¹çš„è®¾ç½®,å��å­—å†�è®®
 		System.setProperty("javax.net.ssl.keyStore","kserver.keystore");
 		System.setProperty("javax.net.ssl.trustStore", "tclient.keystore");
 		System.setProperty("javax.net.ssl.keyStorePassword","123456");
-		System.setProperty("javax.net.debug","all");
 
 		try{
 

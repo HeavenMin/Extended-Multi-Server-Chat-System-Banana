@@ -1,11 +1,10 @@
-package myServer2;
+package myServer3;
+
 
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-
 import javax.net.ssl.SSLSocket;
-
 import org.json.simple.JSONObject;
 
 public class MainServer {
@@ -22,6 +21,7 @@ public class MainServer {
 	private static ArrayList<String> room_belong_server;
 
 	public static synchronized MainServer getInstance() {
+
 		if(instance == null) {
 			instance = new MainServer();
 		}
@@ -29,6 +29,7 @@ public class MainServer {
 	}
 
 	public static void main(String[] args){
+
 		AuthenLoader loader = new AuthenLoader();
 		username = loader.loadUserNameList("authen.txt");
 		password = loader.loadPasswordList("authen.txt");
@@ -37,22 +38,28 @@ public class MainServer {
 		server_state = new ArrayList<Conf>();
 		room_id = new ArrayList<String>();
 		room_belong_server = new ArrayList<String>();
+
 		for(int i=0;i<username.size();i++){
 			locked.add(true);
 		}
+
 		port = 80;
 		coordination = 90;
 
 		//开始运行分别接收client和server连接的thread
+
 		new MainServerServerConnection().start();
 		new MainServerClientConnection().start();
+
 	}
+
+
 
 	public synchronized void RemoveServerAnnouncement(SSLSocket serverSocket,Conf serverConf){
 		server_connection.remove(serverSocket);
 		server_state.remove(serverConf);
 		ArrayList<Integer> should_remove = new ArrayList<Integer>();
-		for(int i = (room_belong_server.size() -1) ; i>=0 ; i--){
+		for(int i = room_belong_server.size() -1 ; i>=0 ; i--){
 			if(room_belong_server.get(i).equals(serverConf.getServerid())){
 				should_remove.add(i);
 			}
@@ -68,9 +75,9 @@ public class MainServer {
 				writer.write(notifyremainserver.toJSONString());
 				writer.write("\n");
 				writer.flush();
+
 			}
 			catch(Exception e){
-
 			}
 		}
 	}
@@ -104,7 +111,6 @@ public class MainServer {
 		return server_connection;
 	}
 
-
 	public synchronized void AddServerState(Conf new_Conf){
 		server_state.add(new_Conf);
 	}
@@ -134,8 +140,10 @@ public class MainServer {
 				index = i;
 			}
 		}
+
 		room_id.remove(index);
 		room_belong_server.remove(index);
+
 	}
 
 	public synchronized ArrayList<String> GetRooms(){

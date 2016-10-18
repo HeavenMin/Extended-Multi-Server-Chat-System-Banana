@@ -1,4 +1,4 @@
-package myServer2;
+package myServer3;
 
 /*
  * Name : Min Gao
@@ -11,6 +11,8 @@ package myServer2;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+//change something
+
 public class Conf {
 
 	private String serverid;
@@ -19,6 +21,15 @@ public class Conf {
 	private int clientsPort;
 	private int coordinationPort;
 
+	public Conf(String serverid, InetAddress serverAddress, int clientsPort, int coordinationPort) {
+		super();
+		this.serverid = serverid;
+		this.serverAddress = serverAddress;
+		this.clientsPort = clientsPort;
+		this.coordinationPort = coordinationPort;
+	}
+	
+	
 	public Conf(String serverid, String serverAddress, int clientsPort, int coordinationPort) {
 		super();
 		this.serverid = serverid;
