@@ -1,1 +1,3 @@
 README for GUI
+for this client
+the cml command is -h <hostaddress> -p <port> -i <identity>

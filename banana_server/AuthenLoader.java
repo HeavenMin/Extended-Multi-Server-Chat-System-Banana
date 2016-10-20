@@ -1,7 +1,7 @@
-package myServer2;
+package myServer3;
 
 /*
- * Name : Min Gao, Lang Lin, Ziang Xu, Xing Jiang
+ * Name : Min Gao, Lang Lin, Xing Jiang, Ziang Xu
  * COMP90015 Distributed Systems 2016 SM2 
  * Project2-Extended Multi-Server Chat System  
  */

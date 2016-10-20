@@ -1,4 +1,10 @@
-package au.edu.unimelb.tcp.client;
+package MyClient;
+
+/*
+ * Name : Min Gao, Lang Lin, Xing Jiang, Ziang Xu
+ * COMP90015 Distributed Systems 2016 SM2 
+ * Project2-Extended Multi-Server Chat System  
+ */
 
 public class State {
 

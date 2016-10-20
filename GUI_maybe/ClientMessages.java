@@ -1,4 +1,4 @@
-package MyClient;
+package ChatGUI;
 
 /*
  * Name : Min Gao, Lang Lin, Xing Jiang, Ziang Xu

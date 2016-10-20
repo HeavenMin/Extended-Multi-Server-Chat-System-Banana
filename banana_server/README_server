@@ -1,1 +1,8 @@
 READEME for server
+for the main server
+the cmd command is : -cp <clientport> -sp <serverport>
+
+for the subserver
+the cmd command is :
+-n <servername> -sa <serveraddress> -cp <clientport>
+-sp <coordinationPort> -ma <mainserveraddress> -mp <mainserverport>

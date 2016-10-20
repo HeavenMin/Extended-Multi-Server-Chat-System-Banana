@@ -1,11 +1,9 @@
-package myServer2;
+package myServer3;
 
 /*
- * Name : Min Gao
+ * Name : Min Gao, Lang Lin, Xing Jiang, Ziang Xu
  * COMP90015 Distributed Systems 2016 SM2 
- * Project1-Multi-Server Chat System  
- * Login Name : ming1 
- * Student Number : 773090 
+ * Project2-Extended Multi-Server Chat System  
  */
 
 import java.io.BufferedReader;
@@ -13,19 +11,22 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.net.Socket;
+import java.net.SocketTimeoutException;
+
+import javax.net.ssl.SSLSocket;
 
 public class Client {
 	private String clientid;
 	private String room;
 	private String ownedRoom;
 	private String serverid;
-	private Socket clientSocket;
+	private SSLSocket clientSocket;
 	private BufferedWriter writer;
 	private BufferedReader reader;
 	private boolean isQuitRequestSend;
-	
-	public Client(String clientid, String room, String serverid, Socket clientSocket) {
+
+
+	public Client(String clientid, String room, String serverid, SSLSocket clientSocket) {
 		this.clientid = clientid;
 		this.room = room;
 		this.ownedRoom = null;
@@ -36,14 +37,14 @@ public class Client {
 			reader = new BufferedReader(new InputStreamReader(
 					clientSocket.getInputStream(), "UTF-8"));
 			writer = new BufferedWriter(new OutputStreamWriter(
-					clientSocket.getOutputStream(), "UTF-8"));	
+					clientSocket.getOutputStream(), "UTF-8"));
 		}
 		catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public Client(String clientid, String room, String ownedRoom, String serverid, Socket clientSocket) {
+	public Client(String clientid, String room, String ownedRoom, String serverid, SSLSocket clientSocket) {
 		this.clientid = clientid;
 		this.room = room;
 		this.ownedRoom = ownedRoom;
@@ -54,13 +55,13 @@ public class Client {
 			reader = new BufferedReader(new InputStreamReader(
 					clientSocket.getInputStream(), "UTF-8"));
 			writer = new BufferedWriter(new OutputStreamWriter(
-					clientSocket.getOutputStream(), "UTF-8"));	
+					clientSocket.getOutputStream(), "UTF-8"));
 		}
 		catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public String getClientid() {
 		return clientid;
 	}
@@ -77,18 +78,36 @@ public class Client {
 		return serverid;
 	}
 	
-	public Socket getClientSocket() {
+	public SSLSocket getClientSocket() {
 		return clientSocket;
 	}
 
 	public synchronized String read() throws IOException {
-		if (reader.ready()) {
+//		if (reader.ready()) {
 //		if (reader.readLine() != null) {
-			return reader.readLine();
+		try{
+			clientSocket.setSoTimeout(100);
+			String x = reader.readLine();
+
+		return x;
 		}
-		return null;
+		catch (SocketTimeoutException e) {
+		//	e.printStackTrace();
+			return null;
+		}
+		catch (Exception e) {
+			ClientMessage quitrequest = new ClientMessage(ServerMessage.quit().toJSONString(), clientid);
+			if (!isQuitRequestSend) {
+			//	System.out.println("A client is disconnected abnormally! Clientid: " + clientid);
+				MessageQueue.getInstance().add(quitrequest);
+				isQuitRequestSend = true;
+			}
+		//	e.printStackTrace();
+			return null;
+		}
+			
 	}
-	
+
 	public void write(String msg) {
 		try {
 			writer.write(msg);
@@ -98,23 +117,23 @@ public class Client {
 		catch (IOException e) {
 			ClientMessage quitrequest = new ClientMessage(ServerMessage.quit().toJSONString(), clientid);
 			if (!isQuitRequestSend) {
-				System.out.println("A client is disconnected abnormally! Clientid: " + clientid);
+			//	System.out.println("A client is disconnected abnormally! Clientid: " + clientid);
 				MessageQueue.getInstance().add(quitrequest);
 				isQuitRequestSend = true;
 			}
 			//e.printStackTrace();
 		}
 	}
-	
+
 	public synchronized void createRoom(String roomid) {
 		this.room = roomid;
 		this.ownedRoom = roomid;
 	}
-	
+
 	public synchronized void changeRoom(String roomid) {
 		this.room = roomid;
 	}
-	
+
 	public synchronized void deleteRoom() {
 		this.ownedRoom = null;
 	}

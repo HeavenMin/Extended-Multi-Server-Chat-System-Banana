@@ -1,11 +1,9 @@
-package myServer2;
+package myServer3;
 
 /*
- * Name : Min Gao
+ * Name : Min Gao, Lang Lin, Xing Jiang, Ziang Xu
  * COMP90015 Distributed Systems 2016 SM2 
- * Project1-Multi-Server Chat System  
- * Login Name : ming1 
- * Student Number : 773090 
+ * Project2-Extended Multi-Server Chat System  
  */
 
 import org.json.simple.JSONObject;

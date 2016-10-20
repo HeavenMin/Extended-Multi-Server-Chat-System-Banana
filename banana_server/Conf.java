@@ -1,23 +1,30 @@
-package myServer2;
+package myServer3;
 
 /*
- * Name : Min Gao
+ * Name : Min Gao, Lang Lin, Xing Jiang, Ziang Xu
  * COMP90015 Distributed Systems 2016 SM2 
- * Project1-Multi-Server Chat System  
- * Login Name : ming1 
- * Student Number : 773090 
+ * Project2-Extended Multi-Server Chat System  
  */
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 public class Conf {
-	
+
 	private String serverid;
 //	private String serverAddress;
 	private InetAddress serverAddress;
 	private int clientsPort;
 	private int coordinationPort;
+
+	public Conf(String serverid, InetAddress serverAddress, int clientsPort, int coordinationPort) {
+		super();
+		this.serverid = serverid;
+		this.serverAddress = serverAddress;
+		this.clientsPort = clientsPort;
+		this.coordinationPort = coordinationPort;
+	}
+	
 	
 	public Conf(String serverid, String serverAddress, int clientsPort, int coordinationPort) {
 		super();
@@ -35,19 +42,19 @@ public class Conf {
 		this.clientsPort = clientsPort;
 		this.coordinationPort = coordinationPort;
 	}
-	
+
 	public String getServerid() {
 		return serverid;
 	}
-	
+
 	public InetAddress getServerAddress() {
 		return serverAddress;
 	}
-	
+
 	public int getClientsPort() {
 		return clientsPort;
 	}
-	
+
 	public int getCoordinationPort() {
 		return coordinationPort;
 	}

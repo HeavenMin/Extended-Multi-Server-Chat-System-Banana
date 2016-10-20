@@ -1,4 +1,4 @@
-package MyClient;
+package ChatGUI;
 
 /*
  * Name : Min Gao, Lang Lin, Xing Jiang, Ziang Xu
@@ -6,9 +6,9 @@ package MyClient;
  * Project2-Extended Multi-Server Chat System  
  */
 
+
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.Scanner;
 
 import javax.net.ssl.SSLSocket;
 
@@ -22,9 +22,11 @@ public class MessageSendThread implements Runnable {
 	private boolean debug;
 	
 	// reading from console
-	private Scanner cmdin = new Scanner(System.in);
+	private ChatGUI gui;
 
-	public MessageSendThread(SSLSocket socket, State state, boolean debug) throws IOException {
+	public MessageSendThread(SSLSocket socket, State state, boolean debug,ChatGUI gui) throws IOException {
+		this.gui = gui;
+		gui.addMessageSendThread(this);
 		this.socket = socket;
 		this.state = state;
 		out = new DataOutputStream(socket.getOutputStream());
@@ -48,22 +50,15 @@ public class MessageSendThread implements Runnable {
 		}
 		
 		while (true) {
-			String msg = cmdin.nextLine();
-			System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
-			try {
-				MessageSend(socket, msg);
-			} catch (IOException e) {
-				System.out.println("Communication Error: " + e.getMessage());
-				System.exit(1);
-			}
+			
 		}
 		
 	}
 
 	private void send(JSONObject obj) throws IOException {
 		if (debug) {
-			System.out.println("Sending: " + obj.toJSONString());
-			System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
+			gui.updateOutputTextWithNewLine("Sending: " + obj.toJSONString());
+			gui.updateOutputTextWithoutNewLine("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
 		}
 		out.write((obj.toJSONString() + "\n").getBytes("UTF-8"));
 		out.flush();
@@ -91,8 +86,9 @@ public class MessageSendThread implements Runnable {
 				send(sendToServer);
 			}
 			else {
-				System.out.println("Invalid command!");
-				System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
+				gui.updateOutputTextWithoutNewLine("Invalid command!");
+				gui.updateOutputTextJustNewLine();
+				gui.updateOutputTextWithoutNewLine("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
 			}
 		}
 		else if (array.length == 2) {
@@ -113,13 +109,13 @@ public class MessageSendThread implements Runnable {
 				send(sendToServer);
 			}
 			else {
-				System.out.println("Invalid command!");
-				System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
+				gui.updateOutputTextWithNewLine("Invalid command!");
+				gui.updateOutputTextWithoutNewLine("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
 			}
 		}
 		else {
-			System.out.println("Invalid command!");
-			System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
+			gui.updateOutputTextWithNewLine("Invalid command!");
+			gui.updateOutputTextWithoutNewLine("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
 		}
 		
 	}
@@ -132,5 +128,19 @@ public class MessageSendThread implements Runnable {
 			out = temp_out;
 		}
 		socket = temp_socket;
+	}
+	
+	public void sendFromGUI(String msg) {
+		try {
+			gui.updateOutputTextWithoutNewLine(msg);
+			gui.updateOutputTextJustNewLine();
+			if(!msg.startsWith("#")){
+				gui.updateOutputTextWithoutNewLine("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
+			}
+			MessageSend(socket, msg);
+		} catch (IOException e) {
+			gui.updateOutputTextWithNewLine("Communication Error: " + e.getMessage());
+			System.exit(1);
+		}
 	}
 }

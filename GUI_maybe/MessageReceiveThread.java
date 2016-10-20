@@ -1,10 +1,4 @@
-package MyClient;
-
-/*
- * Name : Min Gao, Lang Lin, Xing Jiang, Ziang Xu
- * COMP90015 Distributed Systems 2016 SM2 
- * Project2-Extended Multi-Server Chat System  
- */
+package ChatGUI;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -32,8 +26,11 @@ public class MessageReceiveThread implements Runnable {
 	private boolean run = true;
 	
 	private MessageSendThread messageSendThread;
+	
+	private ChatGUI gui;
 
-	public MessageReceiveThread(SSLSocket socket, State state, MessageSendThread messageSendThread, boolean debug) throws IOException {
+	public MessageReceiveThread(SSLSocket socket, State state, MessageSendThread messageSendThread, boolean debug,ChatGUI gui) throws IOException {
+		this.gui = gui;
 		this.socket = socket;
 		this.state = state;
 		this.messageSendThread = messageSendThread;
@@ -54,8 +51,8 @@ public class MessageReceiveThread implements Runnable {
 			while (run) {
 				message = (JSONObject) parser.parse(in.readLine());
 				if (debug) {
-					System.out.println("Receiving: " + message.toJSONString());
-					System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
+					gui.updateOutputTextWithNewLine("Receiving: " + message.toJSONString());
+					gui.updateOutputTextWithoutNewLine("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
 				}
 				MessageReceive(socket, message);
 			}
@@ -63,10 +60,10 @@ public class MessageReceiveThread implements Runnable {
 			in.close();
 			socket.close();
 		} catch (ParseException e) {
-			System.out.println("Message Error: " + e.getMessage());
+			gui.updateOutputTextWithNewLine("Message Error: " + e.getMessage());
 			System.exit(1);
 		} catch (IOException e) {
-			System.out.println("Communication Error: " + e.getMessage());
+			gui.updateOutputTextWithNewLine("Communication Error: " + e.getMessage());
 			System.exit(1);
 		}
 
@@ -82,7 +79,7 @@ public class MessageReceiveThread implements Runnable {
 			
 			// terminate program if failed
 			if (!approved) {
-				System.out.println(state.getIdentity() + " already in use.");
+				gui.updateOutputTextWithNewLine(state.getIdentity() + " already in use.");
 				socket.close();
 				System.exit(1);
 			}
@@ -93,12 +90,12 @@ public class MessageReceiveThread implements Runnable {
 		if (type.equals("roomlist")) {
 			JSONArray array = (JSONArray) message.get("rooms");
 			// print all the rooms
-			System.out.print("List of chat rooms:");
+			gui.updateOutputTextWithoutNewLine("List of chat rooms:");
 			for (int i = 0; i < array.size(); i++) {
-				System.out.print(" " + array.get(i));
+				gui.updateOutputTextWithoutNewLine(" " + array.get(i));
 			}
-			System.out.println();
-			System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
+			gui.updateOutputTextJustNewLine();
+			gui.updateOutputTextWithoutNewLine("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
 			return;
 		}
 
@@ -109,12 +106,13 @@ public class MessageReceiveThread implements Runnable {
 			if (message.get("roomid").equals("")) {
 				// quit initiated by the current client
 				if (message.get("identity").equals(state.getIdentity())) {
-					System.out.println(message.get("identity") + " has quit!");
+					gui.updateOutputTextWithNewLine(message.get("identity") + " has quit!");
 					in.close();
 					System.exit(1);
 				} else {
-					System.out.println(message.get("identity") + " has quit!");
-					System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
+					gui.updateOutputTextWithoutNewLine(message.get("identity") + " has quit!");
+					gui.updateOutputTextJustNewLine();
+					gui.updateOutputTextWithoutNewLine("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
 				}
 			// identify whether the client is new or not
 			} else if (message.get("former").equals("")) {
@@ -122,13 +120,14 @@ public class MessageReceiveThread implements Runnable {
 				if (message.get("identity").equals(state.getIdentity())) {
 					state.setRoomId((String) message.get("roomid"));
 				}
-				System.out.println(message.get("identity") + " moves to "
+				gui.updateOutputTextWithNewLine(message.get("identity") + " moves to "
 						+ (String) message.get("roomid"));
-				System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
+				gui.updateOutputTextWithNewLine("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
 			// identify whether roomchange actually happens
 			} else if (message.get("former").equals(message.get("roomid"))) {
-				System.out.println("room unchanged");
-				System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
+				gui.updateOutputTextWithoutNewLine("room unchanged");
+				gui.updateOutputTextJustNewLine();
+				gui.updateOutputTextWithoutNewLine("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
 			}
 			// print the normal roomchange message
 			else {
@@ -137,9 +136,10 @@ public class MessageReceiveThread implements Runnable {
 					state.setRoomId((String) message.get("roomid"));
 				}
 				
-				System.out.println(message.get("identity") + " moves from " + message.get("former") + " to "
+				gui.updateOutputTextWithoutNewLine(message.get("identity") + " moves from " + message.get("former") + " to "
 						+ message.get("roomid"));
-				System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
+				gui.updateOutputTextJustNewLine();
+				gui.updateOutputTextWithoutNewLine("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
 			}
 			return;
 		}
@@ -147,23 +147,23 @@ public class MessageReceiveThread implements Runnable {
 		// server reply of #who
 		if (type.equals("roomcontents")) {
 			JSONArray array = (JSONArray) message.get("identities");
-			System.out.print(message.get("roomid") + " contains");
+			gui.updateOutputTextWithoutNewLine(message.get("roomid") + " contains");
 			for (int i = 0; i < array.size(); i++) {
-				System.out.print(" " + array.get(i));
+				gui.updateOutputTextWithoutNewLine(" " + array.get(i));
 				if (message.get("owner").equals(array.get(i))) {
-					System.out.print("*");
+					gui.updateOutputTextWithoutNewLine("*");
 				}
 			}
-			System.out.println();
-			System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
+			gui.updateOutputTextJustNewLine();
+			gui.updateOutputTextWithoutNewLine("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
 			return;
 		}
 		
 		// server forwards message
 		if (type.equals("message")) {
-			System.out.println(message.get("identity") + ": "
+			gui.updateOutputTextWithoutNewLine(message.get("identity") + ": "
 					+ message.get("content"));
-			System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
+			gui.updateOutputTextWithNewLine("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
 			return;
 		}
 		
@@ -173,12 +173,14 @@ public class MessageReceiveThread implements Runnable {
 			boolean approved = Boolean.parseBoolean((String)message.get("approved"));
 			String temp_room = (String)message.get("roomid");
 			if (!approved) {
-				System.out.println("Create room " + temp_room + " failed.");
-				System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
+				gui.updateOutputTextWithoutNewLine("Create room " + temp_room + " failed.");
+				gui.updateOutputTextJustNewLine();
+				gui.updateOutputTextWithoutNewLine("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
 			}
 			else {
-				System.out.println("Room " + temp_room + " is created.");
-				System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
+				gui.updateOutputTextWithoutNewLine("Room " + temp_room + " is created.");
+				gui.updateOutputTextJustNewLine();
+				gui.updateOutputTextWithoutNewLine("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
 			}
 			return;
 		}
@@ -188,12 +190,14 @@ public class MessageReceiveThread implements Runnable {
 			boolean approved = Boolean.parseBoolean((String)message.get("approved"));
 			String temp_room = (String)message.get("roomid");
 			if (!approved) {
-				System.out.println("Delete room " + temp_room + " failed.");
-				System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
+				gui.updateOutputTextWithoutNewLine("Delete room " + temp_room + " failed.");
+				gui.updateOutputTextJustNewLine();
+				gui.updateOutputTextWithoutNewLine("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
 			}
 			else {
-				System.out.println("Room " + temp_room + " is deleted.");
-				System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
+				gui.updateOutputTextWithoutNewLine("Room " + temp_room + " is deleted.");
+				gui.updateOutputTextJustNewLine();
+				gui.updateOutputTextWithoutNewLine("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
 			}
 			return;
 		}
@@ -206,8 +210,8 @@ public class MessageReceiveThread implements Runnable {
 			
 			// connect to the new server
 			if (debug) {
-				System.out.println("Connecting to server " + host + ":" + port);
-				System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
+				gui.updateOutputTextWithNewLine("Connecting to server " + host + ":" + port);
+				gui.updateOutputTextWithoutNewLine("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
 			}
 			
 			SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
@@ -217,8 +221,9 @@ public class MessageReceiveThread implements Runnable {
 			DataOutputStream out = new DataOutputStream(temp_socket.getOutputStream());
 			JSONObject request = ClientMessages.getMoveJoinRequest(state.getIdentity(), state.getRoomId(), temp_room);
 			if (debug) {
-				System.out.println("Sending: " + request.toJSONString());
-				System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
+				gui.updateOutputTextWithoutNewLine("Sending: " + request.toJSONString());
+				gui.updateOutputTextJustNewLine();
+				gui.updateOutputTextWithoutNewLine("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
 			}
 			send(out, request);
 			
@@ -227,8 +232,9 @@ public class MessageReceiveThread implements Runnable {
 			JSONObject obj = (JSONObject) parser.parse(temp_in.readLine());
 			
 			if (debug) {
-				System.out.println("Receiving: " + obj.toJSONString());
-				System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
+				gui.updateOutputTextWithoutNewLine("Receiving: " + obj.toJSONString());
+				gui.updateOutputTextJustNewLine();
+				gui.updateOutputTextWithoutNewLine("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
 			}
 			
 			// serverchange received and switch server
@@ -236,23 +242,24 @@ public class MessageReceiveThread implements Runnable {
 				messageSendThread.switchServer(temp_socket, out);
 				switchServer(temp_socket, temp_in);
 				String serverid = (String)obj.get("serverid");
-				System.out.println(state.getIdentity() + " switches to server " + serverid);
-				System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
+				gui.updateOutputTextWithoutNewLine(state.getIdentity() + " switches to server " + serverid);
+				gui.updateOutputTextJustNewLine();
+				gui.updateOutputTextWithoutNewLine("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
 			}
 			// receive invalid message
 			else {
 				temp_in.close();
 				out.close();
 				temp_socket.close();
-				System.out.println("Server change failed");
-				System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
+				gui.updateOutputTextWithNewLine("Server change failed");
+				gui.updateOutputTextWithoutNewLine("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
 			}
 			return;
 		}
 		
 		if (debug) {
-			System.out.println("Unknown Message: " + message);
-			System.out.print("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
+			gui.updateOutputTextWithNewLine("Unknown Message: " + message);
+			gui.updateOutputTextWithoutNewLine("[" + state.getRoomId() + "] " + state.getIdentity() + "> ");
 		}
 	}
 	

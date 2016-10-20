@@ -1,4 +1,4 @@
-package MyClient;
+package ChatGUI;
 
 /*
  * Name : Min Gao, Lang Lin, Xing Jiang, Ziang Xu
@@ -119,12 +119,12 @@ public class Client {
 			
 			if (isApproved.equals("true")) {
 				// start sending thread
-				MessageSendThread messageSendThread = new MessageSendThread(socket, state, debug);
+				ChatGUI gui = new ChatGUI();
+				MessageSendThread messageSendThread = new MessageSendThread(socket, state, debug,gui);
 				Thread sendThread = new Thread(messageSendThread);
 				sendThread.start();
-				
 				// start receiving thread
-				Thread receiveThread = new Thread(new MessageReceiveThread(socket, state, messageSendThread, debug));
+				Thread receiveThread = new Thread(new MessageReceiveThread(socket, state, messageSendThread, debug, gui));
 				receiveThread.start();
 			}
 			

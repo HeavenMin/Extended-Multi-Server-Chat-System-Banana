@@ -1,11 +1,9 @@
-package myServer2;
+package myServer3;
 
 /*
- * Name : Min Gao
+ * Name : Min Gao, Lang Lin, Xing Jiang, Ziang Xu
  * COMP90015 Distributed Systems 2016 SM2 
- * Project1-Multi-Server Chat System  
- * Login Name : ming1 
- * Student Number : 773090 
+ * Project2-Extended Multi-Server Chat System  
  */
 
 import java.util.ArrayList;
@@ -29,6 +27,10 @@ public class ServerState {
 	
 	public synchronized void serverConnected(Conf server) {
 		activeServers.add(server);
+	}
+	
+	public synchronized void serverDisconnected(Conf server) {
+		activeServers.remove(server);
 	}
 	
 	public ArrayList<Conf> getServerList() {
