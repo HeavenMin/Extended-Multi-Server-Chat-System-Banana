@@ -1,11 +1,9 @@
 package myServer2;
 
 /*
- * Name : Min Gao
- * COMP90015 Distributed Systems 2016 SM2 
- * Project1-Multi-Server Chat System  
- * Login Name : ming1 
- * Student Number : 773090 
+ * Name : Lang Lin, Min Gao, Xing Jiang, Ziang Xu
+ * COMP90015 Distributed Systems 2016 SM2
+ * Project2-Extended Multi-Server Chat System
  */
 
 import java.util.ArrayList;
@@ -15,16 +13,16 @@ import org.json.simple.JSONObject;
 
 @SuppressWarnings("unchecked")
 public class ServerMessage {
-	
+
 	public static JSONObject lockIdentityRequest(String serverid, String identity) {
 		JSONObject lockIdentity = new JSONObject();
 		lockIdentity.put("type", "lockidentity");
 		lockIdentity.put("serverid", serverid);
 		lockIdentity.put("identity", identity);
 		return lockIdentity;
-		
+
 	}
-	
+
 	public static JSONObject lockIdentityReply(String serverid, String identity, boolean decide) {
 		JSONObject reply = new JSONObject();
 		reply.put("type", "lockidentity");
@@ -33,23 +31,23 @@ public class ServerMessage {
 		reply.put("locked", decide ? "true" : "false");
 		return reply;
 	}
-	
+
 	public static JSONObject newIdentityReplyToClient(boolean decide) {
 		JSONObject reply = new JSONObject();
 		reply.put("type", "newidentity");
 		reply.put("approved", decide ? "true" : "false");
 		return reply;
 	}
-	
+
 	public static JSONObject releaseIdentityLock(String serverid, String identity) {
 		JSONObject release = new JSONObject();
 		release.put("type", "releaseidentity");
 		release.put("serverid", serverid);
 		release.put("identity", identity);
 		return release;
-		
+
 	}
-	
+
 	public static JSONObject roomChange(String identity, String former, String roomidNow) {
 		JSONObject roomchange = new JSONObject();
 		roomchange.put("type", "roomchange");
@@ -58,7 +56,7 @@ public class ServerMessage {
 		roomchange.put("roomid", roomidNow);
 		return roomchange;
 	}
-	
+
 	public static JSONObject roomListReply(ArrayList<String> roomList) {
 		JSONObject reply = new JSONObject();
 		JSONArray list = new JSONArray();
@@ -69,7 +67,7 @@ public class ServerMessage {
 		reply.put("rooms", list);
 		return reply;
 	}
-	
+
 	public static JSONObject whoReply(ArrayList<String> clients, String roomid, String owner) {
 		JSONObject who = new JSONObject();
 		JSONArray list = new JSONArray();
@@ -82,7 +80,7 @@ public class ServerMessage {
 		who.put("owner", owner);
 		return who;
 	}
-	
+
 	public static JSONObject lockRoomidRequest(String serverid, String roomid) {
 		JSONObject lockRoomid = new JSONObject();
 		lockRoomid.put("type", "lockroomid");
@@ -90,7 +88,7 @@ public class ServerMessage {
 		lockRoomid.put("roomid", roomid);
 		return lockRoomid;
 	}
-	
+
 	public static JSONObject lockRoomidReply(String serverid, String roomid, boolean decide) {
 		JSONObject reply = new JSONObject();
 		reply.put("type", "lockroomid");
@@ -99,8 +97,8 @@ public class ServerMessage {
 		reply.put("locked", decide ? "true" : "false");
 		return reply;
 	}
-	
-	
+
+
 	public static JSONObject releaseRoomidLock(String serverid, String roomid, boolean decide) {
 		JSONObject release = new JSONObject();
 		release.put("type", "releaseroomid");
@@ -109,7 +107,7 @@ public class ServerMessage {
 		release.put("approved", decide ? "true" : "false");
 		return release;
 	}
-	
+
 	public static JSONObject createRoomReplyToClient(String roomid, boolean decide) {
 		JSONObject reply = new JSONObject();
 		reply.put("type", "createroom");
@@ -117,7 +115,7 @@ public class ServerMessage {
 		reply.put("approved", decide ? "true" : "false");
 		return reply;
 	}
-	
+
 	public static JSONObject routeInfoToClient(String roomid, String hostAddress, int port) {
 		JSONObject reply = new JSONObject();
 		reply.put("type", "route");
@@ -126,7 +124,7 @@ public class ServerMessage {
 		reply.put("port", Integer.toString(port));
 		return reply;
 	}
-	
+
 	public static JSONObject serverChangeToClient(String serverid, boolean decide) {
 		JSONObject reply = new JSONObject();
 		reply.put("type", "serverchange");
@@ -134,7 +132,7 @@ public class ServerMessage {
 		reply.put("serverid", serverid);
 		return reply;
 	}
-	
+
 	public static JSONObject deleteRoomToClient(String roomid, boolean decide) {
 		JSONObject reply = new JSONObject();
 		reply.put("type", "deleteroom");
@@ -142,7 +140,7 @@ public class ServerMessage {
 		reply.put("approved", decide ? "true" : "false");
 		return reply;
 	}
-	
+
 	public static JSONObject deleteRoomInform(String serverid, String roomid) {
 		JSONObject inform = new JSONObject();
 		inform.put("type", "deleteroom");
@@ -150,7 +148,7 @@ public class ServerMessage {
 		inform.put("roomid", roomid);
 		return inform;
 	}
-	
+
 	public static JSONObject message(String clientid, String content) {
 		JSONObject message = new JSONObject();
 		message.put("type", "message");
@@ -158,7 +156,7 @@ public class ServerMessage {
 		message.put("content", content);
 		return message;
 	}
-	
+
 	public static JSONObject serverChange(String serverid, boolean decide) {
 		JSONObject serverChange = new JSONObject();
 		serverChange.put("type", "serverchange");
@@ -166,14 +164,14 @@ public class ServerMessage {
 		serverChange.put("serverid", serverid);
 		return serverChange;
 	}
-	
+
 	public static JSONObject joinRoom(String roomid) {
 		JSONObject join = new JSONObject();
 	    join.put("type", "join");
 	    join.put("roomid", roomid);
 	    return join;
 	}
-	
+
 	public static JSONObject quit() {
 	    JSONObject quit = new JSONObject();
 	    quit.put("type", "quit");
